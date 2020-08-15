@@ -43,15 +43,14 @@ const RestaurantSchema = new Schema({
       return this.onSiteOrder;
     },
   },
-  location: {
-    address: {
-      type: String,
-      required: true,
-    },
-    locationOnMap: {
-      type: String,
-      required: true,
-    },
+  address: {
+    type: String,
+    required: true,
+  },
+  geolocation: {
+    type: Schema.Types.ObjectId,
+    ref: "locations",
+    required: true,
   },
   rating: {
     type: Number,

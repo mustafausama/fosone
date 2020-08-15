@@ -21,6 +21,8 @@ mongoose
     console.log(err);
   });
 
+const Restaurant = require("./models/Restaurant");
+
 // Passport
 
 // Routes
