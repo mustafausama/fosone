@@ -38,6 +38,7 @@
     "is-empty-object": "^1.1.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.10.0",
+    "nodemailer": "^6.4.11",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "password-validator": "^5.1.0",

@@ -1,11 +1,18 @@
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
+const nodemailer = require("nodemailer");
+
 const User = require("../../models/User");
 const Role = require("../../models/Role");
 const UserToken = require("../../models/UserToken");
+
+const emailAuth = require("../../config/keys").email;
+
+require("mongoose").set("useFindAndModify", false);
+
 const findExistingUser = (req, res, next) => {
-  const { username, email } = req.body;
-  User.findOne({ $or: [{ email }, { username }] })
+  const { username, email, phone } = req.body;
+  User.findOne({ $or: [{ email }, { username }, { phone }] })
     .then((user) => {
       if (user)
         return res
@@ -13,7 +20,9 @@ const findExistingUser = (req, res, next) => {
           .json(
             user.username === username
               ? { username: "Username Exists" }
-              : { email: "Email exists" }
+              : user.email === email
+              ? { email: "Email exists" }
+              : { phone: "Phone number exists" }
           );
       next();
     })
@@ -86,19 +95,8 @@ const saveNewUser = (req, res, next) => {
   newUser
     .save()
     .then((user) => {
-      const activationKey = uuidv4();
-      const newUserToken = new UserToken({
-        user: user.id,
-        token: activationKey,
-        for: "activation",
-      });
-      newUserToken
-        .save()
-        .then((token) => res.status(200).json(user))
-        .catch((err) => {
-          console.log(err);
-          return res.status(500);
-        });
+      req.user = user;
+      next();
     })
     .catch((err) => {
       console.log(err);
@@ -107,7 +105,6 @@ const saveNewUser = (req, res, next) => {
 };
 
 const findActivationToken = (req, res, next) => {
-  require("mongoose").set("useFindAndModify", false);
   UserToken.findOneAndRemove(
     { token: req.params.activationKey, for: "activation" },
     { useFindAndModify: false }
@@ -127,14 +124,78 @@ const findActivationToken = (req, res, next) => {
 };
 
 const activateByActivationKey = (req, res, next) => {
-  User.findByIdAndUpdate(req.userToken.user, { activated: true })
+  User.findByIdAndUpdate(req.userToken.user, { activated: true }, { new: true })
     .then((user) => {
       res.status(200).json(user);
+      next();
     })
     .catch((err) => {
       console.log(err);
       return res.status(500);
     });
+};
+
+const resendActivationKeyValidation = (req, res, next) => {
+  User.findById(req.user.id).then((user) => {
+    if (!user) return res.status(400).json({ user: "User not found" });
+    if (user.activated)
+      return res
+        .status(400)
+        .json({ userActivated: "User account is already activated" });
+    UserToken.findOneAndRemove({ user: user.id, for: "activation" })
+      .then((userToken) => {
+        next();
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.status(500);
+      });
+  });
+};
+
+const createAndSendActivationKey = (req, res, next) => {
+  const { user } = req;
+  const activationKey = uuidv4();
+  const newUserToken = new UserToken({
+    user: user.id,
+    token: activationKey,
+    for: "activation",
+  });
+  newUserToken.save().then((token) => {
+    const transporter = nodemailer.createTransport({
+      host: emailAuth.host,
+      port: emailAuth.port,
+      secure: false,
+      auth: {
+        user: emailAuth.user,
+        pass: emailAuth.pass,
+      },
+    });
+    transporter.verify(function (error, success) {
+      if (error) {
+        console.log("Email error:" + error);
+      } else {
+        console.log("Server is ready to take our messages");
+      }
+    });
+    const message = {
+      from: "mustafausama@outlook.com",
+      to: user.email,
+      subject: "Activate your account",
+      text: "Activate your account using the activation code: ".concat(
+        newUserToken.token
+      ),
+    };
+    transporter.sendMail(message, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+      next();
+    });
+    res.status(200).json(user);
+  });
 };
 
 module.exports = {
@@ -144,4 +205,6 @@ module.exports = {
   saveNewUser,
   findActivationToken,
   activateByActivationKey,
+  createAndSendActivationKey,
+  resendActivationKeyValidation,
 };

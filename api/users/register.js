@@ -13,7 +13,10 @@ const {
   saveNewUser,
   findActivationToken,
   activateByActivationKey,
+  resendActivationKeyValidation,
+  createAndSendActivationKey,
 } = require("../../utils/middlewares/registration");
+const User = require("../../models/User");
 
 // @route   POST api/users/register
 // @desc    Register a new user
@@ -37,6 +40,22 @@ router.post(
   validateActivationKey,
   findActivationToken,
   activateByActivationKey
+);
+
+// @route   POST api/users/register
+// @desc    Register a new user
+// @access  Private
+// Order: validateNewRegistration > sendActivationKey
+router.post(
+  "/resendActivationKey",
+  (req, res, next) => {
+    User.findOne({ email: req.body.email }).then((user) => {
+      req.user = user;
+      next();
+    });
+  },
+  resendActivationKeyValidation,
+  createAndSendActivationKey
 );
 
 module.exports = router;
