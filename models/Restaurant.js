@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const Working = require("./Working");
+const Location = require("./Location");
+const Menu = require("./Menu");
+
 const RestaurantSchema = new Schema({
   name: {
     type: String,
@@ -23,23 +27,20 @@ const RestaurantSchema = new Schema({
     default: false,
   },
   deliveryWorking: {
-    type: Schema.Types.ObjectId,
-    ref: "workings",
-    required: function () {
+    type: Working,
+    required: () => {
       return this.delivery;
     },
   },
   takeawayWorking: {
-    type: Schema.Types.ObjectId,
-    ref: "workings",
-    required: function () {
+    type: Working,
+    required: () => {
       return this.takeaway;
     },
   },
   onsiteWorking: {
-    type: Schema.Types.ObjectId,
-    ref: "workings",
-    required: function () {
+    type: Working,
+    required: () => {
       return this.onSiteOrder;
     },
   },
@@ -48,8 +49,7 @@ const RestaurantSchema = new Schema({
     required: true,
   },
   geolocation: {
-    type: Schema.Types.ObjectId,
-    ref: "locations",
+    type: Location,
     required: true,
   },
   rating: {
@@ -67,12 +67,13 @@ const RestaurantSchema = new Schema({
   ],
   category: {
     type: Schema.Types.ObjectId,
-    ref: "resCats",
+    ref: "categories",
   },
   group: {
     type: Schema.Types.ObjectId,
-    ref: "resGroups",
+    ref: "groups",
   },
+  menus: [Menu],
 });
 
 module.exports = Restaurant = mongoose.model("restaurants", RestaurantSchema);

@@ -26,6 +26,7 @@ const Restaurant = require("./models/Restaurant");
 // Passport
 
 // Routes
+app.use("/api", require("./api"));
 
 // App listen
 const port = process.env.PORT || 5007;

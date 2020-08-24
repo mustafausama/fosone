@@ -11,7 +11,7 @@ const WorkingSchema = new Schema({
       type: Number,
       min: 0,
       max: 6,
-      required: function () {
+      required: () => {
         return !this.working.weekDays.all;
       },
     },
@@ -19,7 +19,7 @@ const WorkingSchema = new Schema({
       type: Number,
       min: 0,
       max: 6,
-      required: function () {
+      required: () => {
         return !this.working.weekDays.all;
       },
     },
@@ -40,7 +40,7 @@ const WorkingSchema = new Schema({
             type: Number,
             min: 0,
             max: 23,
-            required: function () {
+            required: () => {
               return !this.working.hours.hoursForDays.all;
             },
           },
@@ -48,16 +48,16 @@ const WorkingSchema = new Schema({
             type: Number,
             min: 0,
             max: 23,
-            required: function () {
+            required: () => {
               return !this.working.hours.hoursForDays.all;
             },
           },
         },
       ],
-      required: function () {
+      required: () => {
         return !this.working.hours.all;
       },
-      validate: function (val) {
+      validate: (val) => {
         return (
           val.length !==
           this.working.weekDays.end - this.working.weekDays.start + 1
@@ -67,4 +67,4 @@ const WorkingSchema = new Schema({
   },
 });
 
-module.exports = Working = mongoose.model("workings", WorkingSchema);
+module.exports = WorkingSchema;
