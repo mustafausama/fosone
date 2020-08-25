@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+  validateFacebookRegister,
   validateNewRegistration,
   validateActivationKey,
 } = require("../../utils/validation/register");
@@ -24,11 +25,13 @@ const User = require("../../models/User");
 // Order: validateNewRegistration > validateUserExists > validateNewUserRoleExists > hashPassword > saveNewUser
 router.post(
   "/",
+  validateFacebookRegister,
   validateNewRegistration,
   findExistingUser,
   findNewUserRole,
   hashPassword,
-  saveNewUser
+  saveNewUser,
+  createAndSendActivationKey
 );
 
 // @route   POST api/users/register/activate/:activationKey

@@ -1,5 +1,8 @@
 const passwordValidator = require("password-validator");
+const axios = require("axios");
+
 const { countries } = require("countries-list");
+
 const { validate: uuidvalidate } = require("uuid");
 
 const isEmptyObject = require("is-empty-object");
@@ -15,6 +18,38 @@ const {
   isAfter,
   equals,
 } = require("validator");
+
+/*
+fbFirstName: "",
+fbLastName: "",
+fbEmail: "",
+fbUserID: "",
+fbAccessToken: "",
+*/
+
+const validateFacebookRegister = (req, res, next) => {
+  if (!req.body.fbAccessToken || !req.body.fbUserID) return next();
+  const { fbAccessToken, fbUserID } = req.body;
+  let urlGraphFacebook = `https://graph.facebook.com/v2.11/${fbUserID}/`;
+  axios
+    .get(urlGraphFacebook, {
+      params: {
+        access_token: fbAccessToken,
+        fields: "id,first_name,last_name,email",
+      },
+    })
+    .then((response) => {
+      req.body.firstName = response.data.first_name;
+      req.body.lastName = response.data.last_name;
+      req.body.email = response.data.email;
+      req.body.fbUserID = response.data.id;
+      next();
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500);
+    });
+};
 
 const validateNewRegistration = (req, res, next) => {
   const errors = {};
@@ -130,6 +165,7 @@ const validateActivationKey = (req, res, next) => {
 };
 
 module.exports = {
+  validateFacebookRegister,
   validateNewRegistration,
   validateActivationKey,
 };

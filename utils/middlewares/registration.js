@@ -80,6 +80,8 @@ const saveNewUser = (req, res, next) => {
     country,
     birthdate,
     newUserRole,
+    fbAccessToken,
+    fbUserID,
   } = req.body;
 
   const newUser = new User({
@@ -91,11 +93,18 @@ const saveNewUser = (req, res, next) => {
     country,
     role: newUserRole,
     birthdate,
+    facebook: !fbAccessToken
+      ? undefined
+      : {
+          id: fbUserID,
+          accessToken: fbAccessToken,
+        },
   });
   newUser
     .save()
     .then((user) => {
       req.user = user;
+      console.log(req.user);
       next();
     })
     .catch((err) => {
@@ -189,12 +198,12 @@ const createAndSendActivationKey = (req, res, next) => {
     transporter.sendMail(message, function (error, info) {
       if (error) {
         console.log(error);
+        res.status(500);
       } else {
         console.log("Email sent: " + info.response);
+        res.status(200).json(user);
       }
-      next();
     });
-    res.status(200).json(user);
   });
 };
 

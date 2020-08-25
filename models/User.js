@@ -43,18 +43,6 @@ const UserSchema = new Schema({
         return this.facebook && this.facebook.id && true;
       },
     },
-    firstName: {
-      type: String,
-      required: () => {
-        return this.facebook && this.facebook.id && true;
-      },
-    },
-    lastName: {
-      type: String,
-      required: () => {
-        return this.facebook && this.facebook.id && true;
-      },
-    },
   },
   timeZone: {
     type: String,
