@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const Working = require("./Working").schema;
+
 const UserSchema = new Schema({
   name: {
     type: String,
@@ -10,22 +12,9 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
-  phone: {
-    type: String,
-    required: () => {
-      return !this.email;
-    },
-  },
-  email: {
-    type: String,
-    required: () => {
-      return !this.phone;
-    },
-  },
-  password: {
-    type: String,
-    required: true,
-  },
+  phone: String,
+  email: String,
+  password: String, // required if facebook is not provided
   birthdate: {
     type: Date,
     required: true,
@@ -36,11 +25,8 @@ const UserSchema = new Schema({
   facebook: {
     id: {
       type: Number,
-    },
-    accessToken: {
-      type: String,
       required: () => {
-        return this.facebook && this.facebook.id && true;
+        return this.facebook;
       },
     },
   },
@@ -53,7 +39,7 @@ const UserSchema = new Schema({
   },
   location: {
     type: Schema.Types.ObjectId,
-    ref: "locations",
+    ref: "Location",
   },
   addressList: [
     {
@@ -63,14 +49,11 @@ const UserSchema = new Schema({
       building: String,
       floor: String,
       apartment: String,
-      availability: {
-        type: Schema.Types.ObjectId,
-        ref: "workings ",
-      },
+      availability: Working,
       phone: String,
       location: {
         type: Schema.Types.ObjectId,
-        ref: "locations",
+        ref: "Location",
       },
     },
   ],
@@ -87,7 +70,6 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
-  // TODO: Logins
 });
 
-module.exports = User = mongoose.model("users", UserSchema);
+module.exports = User = mongoose.model("User", UserSchema);

@@ -18,4 +18,4 @@ MenuItemSchema.add({
   options: [MenuItemSchema],
 });
 
-module.exports = MenuItemSchema;
+module.exports = MenuItem = mongoose.model("MenuItem", MenuItemSchema);

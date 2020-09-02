@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-const validateLogin = require("../../utils/validation/login").validateLogin;
+const {
+  validateFacebookLogin,
+  validateLogin,
+} = require("../../utils/validation/login");
 
 const {
   findUser,
@@ -12,6 +15,13 @@ const {
 // @route   POST api/users/login
 // @desc    Login User / Return JWT Token
 // @access  Public
-// Order: validateLogin > findUser > confirmPassword > signTokenAndDeliver
-router.post("/", validateLogin, findUser, confirmPassword, signTokenAndDeliver);
+// Order: validateFacebookLogin > validateLogin > findUser > confirmPassword > signTokenAndDeliver
+router.post(
+  "/",
+  validateFacebookLogin,
+  validateLogin,
+  findUser,
+  confirmPassword,
+  signTokenAndDeliver
+);
 module.exports = router;

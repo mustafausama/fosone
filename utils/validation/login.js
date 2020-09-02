@@ -1,4 +1,5 @@
 const isEmptyObject = require("is-empty-object");
+const axios = require("axios");
 
 const {
   isAlphanumeric,
@@ -8,7 +9,33 @@ const {
   isEmail,
 } = require("validator");
 
+const validateFacebookLogin = (req, res, next) => {
+  if (!req.body.fbAccessToken || !req.body.fbUserID) return next();
+  const { fbAccessToken, fbUserID } = req.body;
+  let urlGraphFacebook = `https://graph.facebook.com/v2.12/${fbUserID}/`;
+  axios
+    .get(urlGraphFacebook, {
+      params: {
+        access_token: fbAccessToken,
+        fields: "id",
+      },
+    })
+    .then((response) => {
+      if (!response)
+        return res.status(400).json({ facebook: "Bad request params" });
+      delete req.body.fbAccessToken;
+      req.body.fbUserID = response.data.id;
+      console.log(req.body);
+      next();
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500);
+    });
+};
+
 const validateLogin = (req, res, next) => {
+  if (req.body.fbUserID) return next();
   const errors = {};
   var { usernameOrEmail, password } = req.body;
   if (!usernameOrEmail || isEmpty((usernameOrEmail = usernameOrEmail.trim())))
@@ -30,4 +57,7 @@ const validateLogin = (req, res, next) => {
   next();
 };
 
-module.exports.validateLogin = validateLogin;
+module.exports = {
+  validateFacebookLogin,
+  validateLogin,
+};

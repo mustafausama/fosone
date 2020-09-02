@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import FacebookLogin from "react-facebook-login";
 import axios from "axios";
-import fetch from "node-fetch";
+//import fetch from "node-fetch";
 
 class Register extends Component {
   state = {
@@ -25,7 +25,7 @@ class Register extends Component {
       fbUserID: response.userID,
       firstName: response.first_name,
       lastName: response.last_name,
-      birthdate: response.birthday,
+      email: response.email,
     });
   };
   register = () => {
@@ -127,9 +127,22 @@ class Register extends Component {
         <FacebookLogin
           appId="1222306931451693"
           autoLoad={false}
-          fields="first_name,last_name,email,birthday"
+          fields="id,first_name,last_name,email"
           callback={this.responseFacebook}
           icon="fa-facebook"
+          textButton="Sign up with facebook"
+        />
+        <br></br>
+
+        <button onClick={this.register}>Submit</button>
+        <br></br>
+        <FacebookLogin
+          appId="1222306931451693"
+          autoLoad={false}
+          fields="id,email"
+          callback={this.responseFacebook}
+          icon="fa-facebook"
+          textButton="Login with facebook"
         />
       </div>
     );

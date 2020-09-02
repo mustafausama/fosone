@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const ReviewSchema = new Schema({
   for: {
     type: Schema.Types.ObjectId,
-    ref: "restaurants",
+    ref: "Restaurant",
   },
   rating: {
     type: Number,
@@ -15,11 +15,11 @@ const ReviewSchema = new Schema({
   review: {
     author: {
       type: Schema.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: true,
     },
     text: String,
   },
 });
 
-module.exports = Review = mongoose.model("reviews", ReviewSchema);
+module.exports = Review = mongoose.model("Review", ReviewSchema);

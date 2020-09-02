@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const Working = require("./Working");
-const Location = require("./Location");
-const Menu = require("./Menu");
+const Working = require("./Working").schema;
+const Location = require("./Location").schema;
+const Menu = require("./Menu").schema;
 
 const RestaurantSchema = new Schema({
   name: {
@@ -22,34 +22,43 @@ const RestaurantSchema = new Schema({
     type: Boolean,
     default: false,
   },
-  onSiteOrder: {
+  onSite: {
     type: Boolean,
     default: false,
   },
   deliveryWorking: {
     type: Working,
     required: () => {
-      return this.delivery;
+      return this.delivery ? true : false;
     },
   },
   takeawayWorking: {
     type: Working,
     required: () => {
-      return this.takeaway;
+      return this.takeaway ? true : false;
     },
   },
-  onsiteWorking: {
+  onSiteWorking: {
     type: Working,
     required: () => {
-      return this.onSiteOrder;
+      return this.onSite ? true : false;
     },
   },
-  address: {
-    type: String,
-    required: true,
-  },
-  geolocation: {
-    type: Location,
+  location: {
+    type: {
+      address: {
+        country: String,
+        state: String,
+        city: String,
+        street: String,
+        building: String,
+        storeNumber: String,
+      },
+      geolocation: {
+        type: Location,
+        required: true,
+      },
+    },
     required: true,
   },
   rating: {
@@ -59,21 +68,19 @@ const RestaurantSchema = new Schema({
   },
   admins: [
     {
-      user: {
-        type: Schema.Types.ObjectId,
-        ref: "users",
-      },
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   ],
   category: {
     type: Schema.Types.ObjectId,
-    ref: "categories",
+    ref: "Category",
   },
   group: {
     type: Schema.Types.ObjectId,
-    ref: "groups",
+    ref: "Group",
   },
   menus: [Menu],
 });
 
-module.exports = Restaurant = mongoose.model("restaurants", RestaurantSchema);
+module.exports = Restaurant = mongoose.model("Restaurant", RestaurantSchema);

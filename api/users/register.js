@@ -22,7 +22,7 @@ const User = require("../../models/User");
 // @route   POST api/users/register
 // @desc    Register a new user
 // @access  Public
-// Order: validateNewRegistration > validateUserExists > validateNewUserRoleExists > hashPassword > saveNewUser
+// Order: validateFacebook > validateNewRegistration > validateUserExists > validateNewUserRoleExists > hashPassword > saveNewUser
 router.post(
   "/",
   validateFacebookRegister,
@@ -31,7 +31,11 @@ router.post(
   findNewUserRole,
   hashPassword,
   saveNewUser,
-  createAndSendActivationKey
+  createAndSendActivationKey,
+  (req, res, next) => {
+    console.log("will send activation by phone");
+    res.status(400).json(req.user);
+  }
 );
 
 // @route   POST api/users/register/activate/:activationKey

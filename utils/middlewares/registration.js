@@ -11,19 +11,25 @@ const emailAuth = require("../../config/keys").email;
 require("mongoose").set("useFindAndModify", false);
 
 const findExistingUser = (req, res, next) => {
-  const { username, email, phone } = req.body;
-  User.findOne({ $or: [{ email }, { username }, { phone }] })
+  const { username, email, phone, fbUserID } = req.body;
+  const opts = [];
+  if (username) opts.push({ username });
+  if (email) opts.push({ email });
+  if (phone) opts.push({ phone });
+  if (fbUserID) opts.push({ "facebook.id": fbUserID });
+  User.findOne({
+    $or: opts,
+  })
     .then((user) => {
-      if (user)
-        return res
-          .status(400)
-          .json(
-            user.username === username
-              ? { username: "Username Exists" }
-              : user.email === email
-              ? { email: "Email exists" }
-              : { phone: "Phone number exists" }
-          );
+      if (user) {
+        const error = {};
+        if (user.username === username) error.username = "Username Exists";
+        if (email && user.email === email) error.email = "Email exists";
+        if (phone && user.phone === phone) error.phone = "Phone number exists";
+        if (fbUserID && user.facebook.id === fbUserID)
+          error.facebook = "Facebook account exists";
+        return res.status(400).json(error);
+      }
       next();
     })
     .catch((err) => {
@@ -49,6 +55,7 @@ const findNewUserRole = (req, res, next) => {
 };
 
 const hashPassword = (req, res, next) => {
+  if (req.body.fbUserID && !req.body.password) return next();
   bcrypt
     .genSalt(10)
     .then((salt) => {
@@ -80,10 +87,8 @@ const saveNewUser = (req, res, next) => {
     country,
     birthdate,
     newUserRole,
-    fbAccessToken,
     fbUserID,
   } = req.body;
-
   const newUser = new User({
     name: firstName.concat(" ").concat(lastName),
     username,
@@ -93,24 +98,70 @@ const saveNewUser = (req, res, next) => {
     country,
     role: newUserRole,
     birthdate,
-    facebook: !fbAccessToken
+    facebook: !fbUserID
       ? undefined
       : {
           id: fbUserID,
-          accessToken: fbAccessToken,
         },
+    activated: fbUserID ? true : false,
   });
   newUser
     .save()
     .then((user) => {
+      if (fbUserID) return res.status(200).json(user);
       req.user = user;
-      console.log(req.user);
       next();
     })
     .catch((err) => {
       console.log(err);
       return res.status(500);
     });
+};
+
+const createAndSendActivationKey = (req, res, next) => {
+  const { user } = req;
+  if (user.activated || !user.email) return next();
+  const activationKey = uuidv4();
+  const newUserToken = new UserToken({
+    user: user.id,
+    token: activationKey,
+    for: "activation",
+  });
+  newUserToken.save().then((token) => {
+    const transporter = nodemailer.createTransport({
+      host: emailAuth.host,
+      port: emailAuth.port,
+      secure: false,
+      auth: {
+        user: emailAuth.user,
+        pass: emailAuth.pass,
+      },
+    });
+    transporter.verify(function (error, success) {
+      if (error) {
+        console.log("Email error:" + error);
+      } else {
+        console.log("Server is ready to take our messages");
+      }
+    });
+    const message = {
+      from: "mustafausama@outlook.com",
+      to: user.email,
+      subject: "Activate your account",
+      text: "Activate your account using the activation code: ".concat(
+        newUserToken.token
+      ),
+    };
+    transporter.sendMail(message, function (error, info) {
+      if (error) {
+        console.log(error);
+        res.status(500);
+      } else {
+        console.log("Email sent: " + info.response);
+        res.status(200).json(user);
+      }
+    });
+  });
 };
 
 const findActivationToken = (req, res, next) => {
@@ -159,51 +210,6 @@ const resendActivationKeyValidation = (req, res, next) => {
         console.log(err);
         return res.status(500);
       });
-  });
-};
-
-const createAndSendActivationKey = (req, res, next) => {
-  const { user } = req;
-  const activationKey = uuidv4();
-  const newUserToken = new UserToken({
-    user: user.id,
-    token: activationKey,
-    for: "activation",
-  });
-  newUserToken.save().then((token) => {
-    const transporter = nodemailer.createTransport({
-      host: emailAuth.host,
-      port: emailAuth.port,
-      secure: false,
-      auth: {
-        user: emailAuth.user,
-        pass: emailAuth.pass,
-      },
-    });
-    transporter.verify(function (error, success) {
-      if (error) {
-        console.log("Email error:" + error);
-      } else {
-        console.log("Server is ready to take our messages");
-      }
-    });
-    const message = {
-      from: "mustafausama@outlook.com",
-      to: user.email,
-      subject: "Activate your account",
-      text: "Activate your account using the activation code: ".concat(
-        newUserToken.token
-      ),
-    };
-    transporter.sendMail(message, function (error, info) {
-      if (error) {
-        console.log(error);
-        res.status(500);
-      } else {
-        console.log("Email sent: " + info.response);
-        res.status(200).json(user);
-      }
-    });
   });
 };
 

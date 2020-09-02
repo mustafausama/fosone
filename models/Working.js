@@ -11,16 +11,16 @@ const WorkingSchema = new Schema({
       type: Number,
       min: 0,
       max: 6,
-      required: () => {
-        return !this.working.weekDays.all;
+      required: function () {
+        return !this.weekDays.all;
       },
     },
     end: {
       type: Number,
       min: 0,
       max: 6,
-      required: () => {
-        return !this.working.weekDays.all;
+      required: function () {
+        return !this.weekDays.all;
       },
     },
   },
@@ -29,7 +29,7 @@ const WorkingSchema = new Schema({
       type: Boolean,
       required: true,
     },
-    hoursForDays: {
+    hoursPerDay: {
       type: [
         {
           all: {
@@ -40,31 +40,25 @@ const WorkingSchema = new Schema({
             type: Number,
             min: 0,
             max: 23,
-            required: () => {
-              return !this.working.hours.hoursForDays.all;
+            required: function () {
+              return !this.all;
             },
           },
           end: {
             type: Number,
             min: 0,
             max: 23,
-            required: () => {
-              return !this.working.hours.hoursForDays.all;
+            required: function () {
+              return !this.all;
             },
           },
         },
       ],
-      required: () => {
-        return !this.working.hours.all;
-      },
-      validate: (val) => {
-        return (
-          val.length !==
-          this.working.weekDays.end - this.working.weekDays.start + 1
-        );
+      required: function () {
+        return !this.hours.all;
       },
     },
   },
 });
 
-module.exports = WorkingSchema;
+module.exports = Working = mongoose.model("Working", WorkingSchema);
