@@ -11,7 +11,10 @@ const GroupSchema = new Schema({
     required: true,
   },
   picture: String,
-  phonenumbers: [String],
+  phonenumbers: {
+    type: [String],
+    required: true,
+  },
   restaurants: [
     {
       type: Schema.Types.ObjectId,

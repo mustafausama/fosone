@@ -1,4 +1,5 @@
 const isEmptyObject = require("is-empty-object");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const {
   isEmpty,
@@ -13,10 +14,19 @@ const {
 
 const { countries } = require("countries-list");
 
-module.exports.validateNewRestaurant = (req, res, next) => {
+function isLatitude(lat) {
+  return isFinite(lat) && Math.abs(lat) <= 90;
+}
+
+function isLongitude(lng) {
+  return isFinite(lng) && Math.abs(lng) <= 180;
+}
+
+module.exports.validateRestaurant = (req, res, next) => {
   const errors = {};
   var {
     name,
+    description,
     phonenumbers,
     delivery,
     takeaway,
@@ -29,8 +39,7 @@ module.exports.validateNewRestaurant = (req, res, next) => {
     storeNumber,
     latitude,
     longitude,
-    category,
-    group,
+    categories,
     /*    delivery_allWeekDays,
     delivery_weekStart,
     delivery_weekEnd,
@@ -47,6 +56,8 @@ module.exports.validateNewRestaurant = (req, res, next) => {
     onSite_allHours,
     onSite_hoursPerDay,*/
   } = req.body;
+  //if (admins) admins.push(req.user.id);
+  //else admins = [req.user.id];
   const prefix = ["delivery", "takeaway", "onSite"];
   if (!name || isEmpty((name = name.trim())))
     errors.name = "Restaurant name is required";
@@ -62,10 +73,8 @@ module.exports.validateNewRestaurant = (req, res, next) => {
     errors.street = "Street is required";
   if (!building || isEmpty((building = building.trim())))
     errors.building = "Building number is required";
-  if (!category || isEmpty((category = category.trim())))
-    errors.category = "Restaurant category is required";
-  if (!group || isEmpty((group = group.trim())))
-    errors.group = "Restaurant Group is required";
+  if (!categories || categories.length === 0)
+    errors.categories = "Restaurant category/ies is/are required";
   if (!latitude || isEmpty((latitude = latitude.trim())))
     errors.latitude = "Geolocation latitude is required";
   if (!longitude || isEmpty((longitude = longitude.trim())))
@@ -122,12 +131,18 @@ module.exports.validateNewRestaurant = (req, res, next) => {
 
   if (!isLength(name, { min: 2, max: 50 }))
     errors.name = "Restaurant name must be 2 to 50 characters long";
+  if (description && !isLength(description, { min: 2, max: 500 }))
+    errors.name = "Restaurant name must be 2 to 500 characters long";
   phonenumbers.forEach((value) => {
     if (!isMobilePhone(value, "any", { strictMode: true })) {
       if (!errors.phonenumbers) errors.phonenumbers = "";
       errors.phonenumbers += `Invalid phone number: ${value}`;
     }
   });
+  /*category.forEach((cat, id) => {
+    if (!ObjectId.isValid(cat))
+      errors.category = "Invalid category ID at: " + (id + 1);
+  });*/
   if (!isLength(country, { min: 2, max: 2 }) || !countries[country])
     errors.country = "Invalid country";
   if (state && !isLength(state, { min: 2, max: 100 }))
@@ -193,10 +208,52 @@ module.exports.validateNewRestaurant = (req, res, next) => {
   next();
 };
 
-function isLatitude(lat) {
-  return isFinite(lat) && Math.abs(lat) <= 90;
-}
+module.exports.validateCategory = (req, res, next) => {
+  const errors = {};
+  var { uName, title, admins } = req.body;
 
-function isLongitude(lng) {
-  return isFinite(lng) && Math.abs(lng) <= 180;
-}
+  //if (admins) admins.push(req.user.id);
+  //else admins = [req.user.id];
+
+  if (!uName || isEmpty((uName = uName.trim())))
+    errors.uName = "Category unique name is required";
+  if (!title || isEmpty((title = title.trim())))
+    errors.title = "Category title is required";
+  if (!isEmptyObject(errors)) return res.status(400).json(errors);
+
+  if (!isLength(uName, { min: 3, max: 50 }))
+    errors.uName = "Category unique name has to be 3 to 50 characters long";
+  if (!isLength(title, { min: 2, max: 100 }))
+    errors.title = "Category title has to be 2 to 100 characters long";
+  if (!isEmptyObject(errors)) return res.status(400).json(errors);
+  next();
+};
+
+module.exports.validateGroup = (req, res, next) => {
+  const errors = {};
+  var { uName, title, admins, phonenumbers } = req.body;
+
+  //if (admins) admins.push(req.user.id);
+  //else admins = [req.user.id];
+
+  if (!uName || isEmpty((uName = uName.trim())))
+    errors.uName = "Category unique name is required";
+  if (!title || isEmpty((title = title.trim())))
+    errors.title = "Category title is required";
+  if (!phonenumbers || phonenumbers.length === 0)
+    errors.phonenumbers = "Phone numbers are required";
+  if (!isEmptyObject(errors)) return res.status(400).json(errors);
+
+  if (!isLength(uName, { min: 3, max: 50 }))
+    errors.uName = "Category unique name has to be 3 to 50 characters long";
+  if (!isLength(title, { min: 2, max: 100 }))
+    errors.title = "Category title has to be 2 to 100 characters long";
+  phonenumbers.forEach((value) => {
+    if (!isMobilePhone(value, "any", { strictMode: true })) {
+      if (!errors.phonenumbers) errors.phonenumbers = "";
+      errors.phonenumbers += `Invalid phone number: ${value}`;
+    }
+  });
+  if (!isEmptyObject(errors)) return res.status(400).json(errors);
+  next();
+};

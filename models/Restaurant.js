@@ -10,6 +10,7 @@ const RestaurantSchema = new Schema({
     type: String,
     required: true,
   },
+  description: String,
   phonenumbers: {
     type: [String],
     required: true,
@@ -72,10 +73,12 @@ const RestaurantSchema = new Schema({
       ref: "User",
     },
   ],
-  category: {
-    type: Schema.Types.ObjectId,
-    ref: "Category",
-  },
+  categories: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+    },
+  ],
   group: {
     type: Schema.Types.ObjectId,
     ref: "Group",

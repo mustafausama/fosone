@@ -10,7 +10,7 @@ const {
   findUser,
   confirmPassword,
   signTokenAndDeliver,
-} = require("../../utils/middlewares/login");
+} = require("../../utils/controllers/login");
 
 // @route   POST api/users/login
 // @desc    Login User / Return JWT Token
@@ -24,4 +24,5 @@ router.post(
   confirmPassword,
   signTokenAndDeliver
 );
+
 module.exports = router;

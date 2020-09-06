@@ -16,7 +16,7 @@ const {
   activateByActivationKey,
   resendActivationKeyValidation,
   createAndSendActivationKey,
-} = require("../../utils/middlewares/registration");
+} = require("../../utils/controllers/registration");
 const User = require("../../models/User");
 
 // @route   POST api/users/register

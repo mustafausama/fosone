@@ -59,7 +59,7 @@ const UserSchema = new Schema({
   ],
   role: {
     type: Schema.Types.ObjectId,
-    ref: "roles",
+    ref: "Role",
     required: true,
   },
   date: {

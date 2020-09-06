@@ -1,5 +1,7 @@
 const User = require("../../models/User");
 const bcrypt = require("bcryptjs");
+const CryptoJS = require("crypto-js");
+
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 
@@ -18,6 +20,7 @@ const findUser = (req, res, next) => {
       $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }],
     };
   User.findOne(opts)
+    .populate({ path: "role", select: "permissions" })
     .then((user) => {
       if (!user) return res.status(404).json({ user: "User does not exist" });
       if (!req.body.fbUserID && !user.activated)
@@ -38,6 +41,7 @@ const confirmPassword = (req, res, next) => {
   if (req.body.fbUserID) return next();
   const { user } = req;
   const { password } = req.body;
+  console.log(user);
   bcrypt
     .compare(password, user.password)
     .then((passed) => {
@@ -51,15 +55,30 @@ const confirmPassword = (req, res, next) => {
     });
 };
 
-const signTokenAndDeliver = (req, res, next) => {
+const signTokenAndDeliver = (req, res) => {
   const { user } = req;
   const { remember } = req.body;
+  const roleEncrypted = CryptoJS.AES.encrypt(
+    JSON.stringify(user.role),
+    secretOrKey,
+    {
+      keySize: 128 / 8,
+      iv: secretOrKey,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7,
+    }
+  );
+  const tokenUUID = uuidv4();
+  const tokenUUIDEncrypted = CryptoJS.AES.encrypt(
+    tokenUUID,
+    secretOrKey
+  ).toString();
   const payload = {
     id: user.id,
     name: user.name,
     activated: user.activated,
-    role: user.role,
-    tokenUUID: uuidv4(),
+    role: roleEncrypted.toString(),
+    token: tokenUUIDEncrypted.toString(),
   };
   jwt.sign(
     payload,
@@ -76,7 +95,7 @@ const signTokenAndDeliver = (req, res, next) => {
           : 1000 * 60 * 60 * 24;
       const newUserToken = new UserToken({
         user: user.id,
-        token: payload.tokenUUID,
+        token,
         for: "login",
         expiry: new Date(+new Date() + expiry),
       });
