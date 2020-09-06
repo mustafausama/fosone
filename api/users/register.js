@@ -8,12 +8,10 @@ const {
 } = require("../../utils/validation/register");
 
 const {
-  findExistingUser,
-  findNewUserRole,
+  newUserConfirmation,
   hashPassword,
   saveNewUser,
-  findActivationToken,
-  activateByActivationKey,
+  findAndActivateToken,
   resendActivationKeyValidation,
   createAndSendActivationKey,
 } = require("../../utils/controllers/registration");
@@ -27,8 +25,7 @@ router.post(
   "/",
   validateFacebookRegister,
   validateNewRegistration,
-  findExistingUser,
-  findNewUserRole,
+  newUserConfirmation,
   hashPassword,
   saveNewUser,
   createAndSendActivationKey,
@@ -45,14 +42,13 @@ router.post(
 router.post(
   "/activate/:activationKey",
   validateActivationKey,
-  findActivationToken,
-  activateByActivationKey
+  findAndActivateToken
 );
 
 // @route   POST api/users/register
 // @desc    Register a new user
 // @access  Private
-// Order: validateNewRegistration > sendActivationKey
+// Order:
 router.post(
   "/resendActivationKey",
   (req, res, next) => {

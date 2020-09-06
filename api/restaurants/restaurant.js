@@ -2,8 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   parseArrays,
-  findDBResIDs,
-  createResSchemas,
+  configureRestaurant,
   saveRestaurant,
   updateRestaurant,
   deleteRestaurant,
@@ -18,8 +17,7 @@ router.post(
   "/",
   parseArrays,
   validateRestaurant,
-  findDBResIDs,
-  createResSchemas,
+  configureRestaurant,
   saveRestaurant
 );
 
@@ -31,8 +29,7 @@ router.put(
   "/:resID",
   parseArrays,
   validateRestaurant,
-  findDBResIDs,
-  createResSchemas,
+  configureRestaurant,
   updateRestaurant
 );
 

@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require("uuid");
 const UserToken = require("../../models/UserToken");
 const secretOrKey = require("../../config/keys").secretOrKey;
 
-const findUser = (req, res, next) => {
+module.exports.confirmUser = async (req, res, next) => {
   const { usernameOrEmail } = req.body;
   var opts = {};
   if (req.body.fbUserID)
@@ -19,43 +19,28 @@ const findUser = (req, res, next) => {
     opts = {
       $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }],
     };
-  User.findOne(opts)
+  const user = await User.findOne(opts)
     .populate({ path: "role", select: "permissions" })
-    .then((user) => {
-      if (!user) return res.status(404).json({ user: "User does not exist" });
-      if (!req.body.fbUserID && !user.activated)
-        return res.status(400).json({
-          user:
-            "User account is not activated. Please check your email or phone SMS",
-        });
-      req.user = user;
-      next();
-    })
     .catch((err) => {
       console.log(err);
       return res.status(500);
     });
-};
-
-const confirmPassword = (req, res, next) => {
-  if (req.body.fbUserID) return next();
-  const { user } = req;
+  if (!user) return res.status(404).json({ user: "User does not exist" });
+  // if (!req.body.fbUserID && !user.activated) return res.status(400).json({ user: "User account is not activated. Please check your email or phone SMS" });
+  if (req.body.fbUserID) next();
   const { password } = req.body;
-  console.log(user);
-  bcrypt
+  const passed = await bcrypt
     .compare(password, user.password)
-    .then((passed) => {
-      if (!passed)
-        return res.status(400).json({ password: "Incorrect password" });
-      next();
-    })
+    .then((passed) => {})
     .catch((err) => {
       console.log(err);
       return res.status(500);
     });
+  if (!passed) return res.status(400).json({ password: "Incorrect password" });
+  next();
 };
 
-const signTokenAndDeliver = (req, res) => {
+module.exports.signTokenAndDeliver = (req, res) => {
   const { user } = req;
   const { remember } = req.body;
   const roleEncrypted = CryptoJS.AES.encrypt(
@@ -112,10 +97,4 @@ const signTokenAndDeliver = (req, res) => {
         });
     }
   );
-};
-
-module.exports = {
-  findUser,
-  confirmPassword,
-  signTokenAndDeliver,
 };

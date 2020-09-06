@@ -7,8 +7,7 @@ const {
 } = require("../../utils/validation/login");
 
 const {
-  findUser,
-  confirmPassword,
+  confirmUser,
   signTokenAndDeliver,
 } = require("../../utils/controllers/login");
 
@@ -20,8 +19,7 @@ router.post(
   "/",
   validateFacebookLogin,
   validateLogin,
-  findUser,
-  confirmPassword,
+  confirmUser,
   signTokenAndDeliver
 );
 

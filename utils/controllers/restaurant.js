@@ -68,9 +68,24 @@ module.exports.parseArrays = (req, res, next) => {
   next();
 };
 
-module.exports.findDBResIDs = async (req, res, next) => {
+/*    delivery_allWeekDays,
+    delivery_weekStart,
+    delivery_weekEnd,
+    delivery_allHours,
+    delivery_hoursPerDay,
+    takeaway_allWeekDays,
+    takeaway_weekStart,
+    takeaway_weekEnd,
+    takeaway_allHours,
+    takeaway_hoursPerDay,
+    onSite_allWeekDays,
+    onSite_weekStart,
+    onSite_weekEnd,
+    onSite_allHours,
+    onSite_hoursPerDay,*/
+module.exports.configureRestaurant = async (req, res, next) => {
   const errors = {};
-  req.body.admins.forEach((value, id) => {
+  await asyncForEach(req.body.admins, (value, id) => {
     User.findOne({
       $or: [{ _id: value }, { username: value }, { email: value }],
     })
@@ -98,25 +113,7 @@ module.exports.findDBResIDs = async (req, res, next) => {
       });
   });
   if (!isEmptyObject(errors)) return res.status(400).json(errors);
-  next();
-};
-/*    delivery_allWeekDays,
-    delivery_weekStart,
-    delivery_weekEnd,
-    delivery_allHours,
-    delivery_hoursPerDay,
-    takeaway_allWeekDays,
-    takeaway_weekStart,
-    takeaway_weekEnd,
-    takeaway_allHours,
-    takeaway_hoursPerDay,
-    onSite_allWeekDays,
-    onSite_weekStart,
-    onSite_weekEnd,
-    onSite_allHours,
-    onSite_hoursPerDay,*/
 
-module.exports.createResSchemas = (req, res, next) => {
   req.body.location = new Location({
     coordinates: [req.body.latitude, req.body.longitude],
   });
@@ -136,7 +133,6 @@ module.exports.createResSchemas = (req, res, next) => {
       },
     });
   }
-
   next();
 };
 
