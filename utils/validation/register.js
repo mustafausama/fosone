@@ -1,11 +1,10 @@
 const passwordValidator = require("password-validator");
 const axios = require("axios");
 
-const { countries } = require("countries-list");
-
 const { validate: uuidvalidate } = require("uuid");
 
 const isEmptyObject = require("is-empty-object");
+const countryList = require("country-list");
 
 const {
   isEmpty,
@@ -94,8 +93,7 @@ module.exports.validateNewRegistration = (req, res, next) => {
     (!email || isEmpty((email = email.trim()))) &&
     (!phone || isEmpty((phone = phone.trim())))
   )
-    errors.phoneOrEmail =
-      "Either a phone number or an email address is required";
+    errors.email = "Either a phone number or an email address is required";
   if (!isEmptyObject(errors)) return res.status(400).json(errors);
 
   // Validate correct data
@@ -133,7 +131,10 @@ module.exports.validateNewRegistration = (req, res, next) => {
   if (!isDate(birthdate) || isAfter(birthdate, dateLimit.toDateString()))
     errors.birthdate = "Invalid date of birth. You should be 12 years or older";
 
-  if (!isLength(country, { min: 2, max: 2 }) || !countries[country])
+  if (
+    !isLength(country, { min: 2, max: 2 }) ||
+    !countryList.getCodes().includes(country)
+  )
     errors.country = "Invalid country";
 
   // Validate password

@@ -14,7 +14,7 @@ const {
   findAndActivateToken,
   resendActivationKeyValidation,
   createAndSendActivationKey,
-} = require("../../utils/controllers/registration");
+} = require("../../utils/controllers/users/registration");
 const User = require("../../models/User");
 
 // @route   POST api/users/register

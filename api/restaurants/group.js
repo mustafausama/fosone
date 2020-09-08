@@ -7,7 +7,7 @@ const {
   deleteGroup,
   groupAddRestaurant,
   groupDeleteRestaurant,
-} = require("../../utils/controllers/restaurant");
+} = require("../../utils/controllers/restaurants/restaurant");
 const { validateGroup } = require("../../utils/validation/restaurant");
 
 // @route   POST api/restaurants/group

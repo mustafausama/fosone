@@ -12,7 +12,7 @@ const {
   isFloat,
 } = require("validator");
 
-const { countries } = require("countries-list");
+const countryList = require("country-list");
 
 function isLatitude(lat) {
   return isFinite(lat) && Math.abs(lat) <= 90;
@@ -143,7 +143,10 @@ module.exports.validateRestaurant = (req, res, next) => {
     if (!ObjectId.isValid(cat))
       errors.category = "Invalid category ID at: " + (id + 1);
   });*/
-  if (!isLength(country, { min: 2, max: 2 }) || !countries[country])
+  if (
+    !isLength(country, { min: 2, max: 2 }) ||
+    !countryList.getCodes().includes(country)
+  )
     errors.country = "Invalid country";
   if (state && !isLength(state, { min: 2, max: 100 }))
     errors.state = "Invalid state";

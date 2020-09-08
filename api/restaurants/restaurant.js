@@ -6,7 +6,7 @@ const {
   saveRestaurant,
   updateRestaurant,
   deleteRestaurant,
-} = require("../../utils/controllers/restaurant");
+} = require("../../utils/controllers/restaurants/restaurant");
 const { validateRestaurant } = require("../../utils/validation/restaurant");
 
 // @route   POST api/restaurants/resturant

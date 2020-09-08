@@ -9,7 +9,9 @@ const {
 const {
   confirmUser,
   signTokenAndDeliver,
-} = require("../../utils/controllers/login");
+} = require("../../utils/controllers/users/login");
+
+const { permission } = require("../../utils/controllers/authentication/auth");
 
 // @route   POST api/users/login
 // @desc    Login User / Return JWT Token
@@ -20,7 +22,8 @@ router.post(
   validateFacebookLogin,
   validateLogin,
   confirmUser,
-  signTokenAndDeliver
+  signTokenAndDeliver,
+  permission("ORDER")
 );
 
 module.exports = router;

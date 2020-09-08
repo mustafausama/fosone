@@ -7,7 +7,7 @@ const {
   categoryAddRestaurant,
   categoryDeleteRestaurant,
   deleteCategory,
-} = require("../../utils/controllers/restaurant");
+} = require("../../utils/controllers/restaurants/restaurant");
 const { validateCategory } = require("../../utils/validation/restaurant");
 
 // @route   POST api/restaurants/category

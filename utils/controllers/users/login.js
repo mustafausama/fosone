@@ -1,12 +1,12 @@
-const User = require("../../models/User");
+const User = require("../../../models/User");
 const bcrypt = require("bcryptjs");
 const CryptoJS = require("crypto-js");
 
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 
-const UserToken = require("../../models/UserToken");
-const secretOrKey = require("../../config/keys").secretOrKey;
+const UserToken = require("../../../models/UserToken");
+const secretOrKey = require("../../../config/keys").secretOrKey;
 
 module.exports.confirmUser = async (req, res, next) => {
   const { usernameOrEmail } = req.body;
@@ -29,14 +29,12 @@ module.exports.confirmUser = async (req, res, next) => {
   // if (!req.body.fbUserID && !user.activated) return res.status(400).json({ user: "User account is not activated. Please check your email or phone SMS" });
   if (req.body.fbUserID) next();
   const { password } = req.body;
-  const passed = await bcrypt
-    .compare(password, user.password)
-    .then((passed) => {})
-    .catch((err) => {
-      console.log(err);
-      return res.status(500);
-    });
+  const passed = await bcrypt.compare(password, user.password).catch((err) => {
+    console.log(err);
+    return res.status(500);
+  });
   if (!passed) return res.status(400).json({ password: "Incorrect password" });
+  req.user = user;
   next();
 };
 
@@ -63,7 +61,7 @@ module.exports.signTokenAndDeliver = (req, res) => {
     name: user.name,
     activated: user.activated,
     role: roleEncrypted.toString(),
-    token: tokenUUIDEncrypted.toString(),
+    tokenUUID: tokenUUIDEncrypted.toString(),
   };
   jwt.sign(
     payload,
@@ -74,21 +72,27 @@ module.exports.signTokenAndDeliver = (req, res) => {
         console.log(err);
         return res.status(500);
       }
-      const expiry =
-        req.body.fbUserID || remember
-          ? 1000 * 60 * 60 * 24 * 365
-          : 1000 * 60 * 60 * 24;
+      const expiry = new Date(
+        +new Date() +
+          (req.body.fbUserID || remember
+            ? 1000 * 60 * 60 * 24 * 365
+            : 1000 * 60 * 60 * 24)
+      );
       const newUserToken = new UserToken({
         user: user.id,
-        token,
+        token: tokenUUID,
         for: "login",
-        expiry: new Date(+new Date() + expiry),
+        expiry,
       });
       newUserToken
         .save()
         .then((usertoken) => {
+          res.cookie("token", token, {
+            expires: usertoken.expiry,
+            httpOnly: true,
+          });
           return res.status(200).json({
-            token: "Bearer " + token,
+            token: `Bearer ${token}`,
           });
         })
         .catch((err) => {

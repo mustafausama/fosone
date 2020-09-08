@@ -1,11 +1,11 @@
 const ObjectId = require("mongoose").Types.ObjectId;
 
-const Working = require("../../models/Working");
-const Location = require("../../models/Location");
-const User = require("../../models/User");
-const Restaurant = require("../../models/Restaurant");
-const Category = require("../../models/Category");
-const Group = require("../../models/Group");
+const Working = require("../../../models/Working");
+const Location = require("../../../models/Location");
+const User = require("../../../models/User");
+const Restaurant = require("../../../models/Restaurant");
+const Category = require("../../../models/Category");
+const Group = require("../../../models/Group");
 
 const isEmptyObject = require("is-empty-object");
 const e = require("express");

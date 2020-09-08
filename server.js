@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 
 // Express app
@@ -8,6 +9,9 @@ const app = express();
 // Body Parser
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+// Cookie Parser
+app.use(cookieParser());
 
 // Database
 const db = require("./config/keys").mongoDB;

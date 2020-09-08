@@ -2,11 +2,11 @@ const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 const nodemailer = require("nodemailer");
 
-const User = require("../../models/User");
-const Role = require("../../models/Role");
-const UserToken = require("../../models/UserToken");
+const User = require("../../../models/User");
+const Role = require("../../../models/Role");
+const UserToken = require("../../../models/UserToken");
 
-const emailAuth = require("../../config/keys").email;
+const emailAuth = require("../../../config/keys").email;
 
 require("mongoose").set("useFindAndModify", false);
 
@@ -129,6 +129,7 @@ module.exports.resendActivationKeyValidation = (req, res, next) => {
 };
 
 module.exports.createAndSendActivationKey = async (req, res, next) => {
+  const { user } = req.body;
   const activationKey = uuidv4();
   const newUserToken = new UserToken({
     user: user.id,
