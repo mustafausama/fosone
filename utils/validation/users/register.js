@@ -127,7 +127,7 @@ module.exports.validateNewRegistration = (req, res, next) => {
   // Validate date of birth
   const ageLimit = 12;
   const dateLimit = new Date();
-  dateLimit.setFullYear(dateLimit.getFullYear - ageLimit);
+  dateLimit.setFullYear(dateLimit.getFullYear() - ageLimit);
   if (!isDate(birthdate) || isAfter(birthdate, dateLimit.toDateString()))
     errors.birthdate = "Invalid date of birth. You should be 12 years or older";
 
@@ -155,13 +155,10 @@ module.exports.validateNewRegistration = (req, res, next) => {
       .symbols()
       .has()
       .not()
-      .spaces()
-      .is()
-      .not()
-      .oneOf([firstName, lastName, username, birthdate]);
+      .spaces();
     if (!schema.validate(password1))
       errors.password1 =
-        "Password is invalid. Password should be 8 to 100 characters. It should contain at least one lowercase character, one uppercase character, one digit, and one symbol. It should not contain spaces, your first name, your last name, your username, or your date of birth";
+        "Password is invalid. Password should be 8 to 100 characters. It should contain at least one lowercase character, one uppercase character, one digit, and one symbol. It should not contain spaces.";
     if (!equals(password1, password2))
       errors.password2 = "Passwords should match";
     req.body.password = password1;

@@ -5,7 +5,7 @@ const {
   validateFacebookRegister,
   validateNewRegistration,
   validateActivationKey,
-} = require("../../utils/validation/register");
+} = require("../../utils/validation/users/register");
 
 const {
   newUserConfirmation,
@@ -53,6 +53,7 @@ router.post(
   "/resendActivationKey",
   (req, res, next) => {
     User.findOne({ email: req.body.email }).then((user) => {
+      if (!user) res.status(404).json({ nouser: "Cannot find any user" });
       req.user = user;
       next();
     });

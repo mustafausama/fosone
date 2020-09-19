@@ -73,3 +73,21 @@ const UserSchema = new Schema({
 });
 
 module.exports = User = mongoose.model("User", UserSchema);
+
+/*UserSchema.statics.findAllUsers = function (...args) {
+  const func = async function (resolve, reject, ...args) {
+    const users = await this.find();
+    setTimeout(() => {
+      console.log(this.args);
+      resolve(users);
+    }, 3000);
+  };
+  this.args = args;
+  return new Promise(func.bind(this));
+};*/
+/*
+UserSchema.statics.findAllUsers = async function () {
+  const users = await this.find().catch((err) => Promise.reject(err));
+  return Promise.resolve(users);
+};
+*/

@@ -4,7 +4,7 @@ const router = express.Router();
 const {
   validateFacebookLogin,
   validateLogin,
-} = require("../../utils/validation/login");
+} = require("../../utils/validation/users/login");
 
 const {
   confirmUser,

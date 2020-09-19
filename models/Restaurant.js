@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const Working = require("./Working").schema;
-const Location = require("./Location").schema;
 const Menu = require("./Menu").schema;
 
 const RestaurantSchema = new Schema({
@@ -45,22 +44,41 @@ const RestaurantSchema = new Schema({
       return this.onSite ? true : false;
     },
   },
-  location: {
+  address: {
     type: {
-      address: {
-        country: String,
-        state: String,
-        city: String,
-        street: String,
-        building: String,
-        storeNumber: String,
-      },
-      geolocation: {
-        type: Location,
+      country: {
+        type: String,
         required: true,
       },
+      state: String,
+      city: {
+        type: String,
+        required: true,
+      },
+      street: {
+        type: String,
+        required: true,
+      },
+      building: {
+        type: String,
+        required: true,
+      },
+      storeNumber: String,
     },
     required: true,
+  },
+  geolocation: {
+    type: {
+      type: String,
+      default: "Point",
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+      validate: function (val) {
+        return val.length === 2;
+      },
+    },
   },
   rating: {
     type: Number,
@@ -85,5 +103,7 @@ const RestaurantSchema = new Schema({
   },
   menus: [Menu],
 });
+
+RestaurantSchema.index({ geolocation: "2dsphere" });
 
 module.exports = Restaurant = mongoose.model("Restaurant", RestaurantSchema);

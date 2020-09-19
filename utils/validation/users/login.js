@@ -25,7 +25,6 @@ const validateFacebookLogin = (req, res, next) => {
         return res.status(400).json({ facebook: "Bad request params" });
       delete req.body.fbAccessToken;
       req.body.fbUserID = response.data.id;
-      console.log(req.body);
       next();
     })
     .catch((err) => {

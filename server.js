@@ -7,8 +7,8 @@ const mongoose = require("mongoose");
 const app = express();
 
 // Body Parser
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // Cookie Parser
 app.use(cookieParser());
@@ -17,7 +17,11 @@ app.use(cookieParser());
 const db = require("./config/keys").mongoDB;
 
 mongoose
-  .connect(db, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(db, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+  })
   .then(() => {
     console.log("MongoDB Connected");
   })

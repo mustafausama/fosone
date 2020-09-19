@@ -11,10 +11,7 @@ const secretOrKey = require("../../../config/keys").secretOrKey;
 module.exports.confirmUser = async (req, res, next) => {
   const { usernameOrEmail } = req.body;
   var opts = {};
-  if (req.body.fbUserID)
-    opts = {
-      $and: [{ "facebook.id": req.body.fbUserID }],
-    };
+  if (req.body.fbUserID) opts = { "facebook.id": req.body.fbUserID };
   else
     opts = {
       $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }],
@@ -25,9 +22,19 @@ module.exports.confirmUser = async (req, res, next) => {
       console.log(err);
       return res.status(500);
     });
-  if (!user) return res.status(404).json({ user: "User does not exist" });
+  if (!user)
+    return res.status(404).json(
+      req.body.fbUserID
+        ? {
+            fbuser: "This facebook account is not linked to any FoSoNe account",
+          }
+        : { usernameOrEmail: "User does not exist" }
+    );
   // if (!req.body.fbUserID && !user.activated) return res.status(400).json({ user: "User account is not activated. Please check your email or phone SMS" });
-  if (req.body.fbUserID) next();
+  if (req.body.fbUserID) {
+    req.user = user;
+    return next();
+  }
   const { password } = req.body;
   const passed = await bcrypt.compare(password, user.password).catch((err) => {
     console.log(err);
@@ -41,7 +48,7 @@ module.exports.confirmUser = async (req, res, next) => {
 module.exports.signTokenAndDeliver = (req, res) => {
   const { user } = req;
   const { remember } = req.body;
-  const roleEncrypted = CryptoJS.AES.encrypt(
+  /*const roleEncrypted = CryptoJS.AES.encrypt(
     JSON.stringify(user.role),
     secretOrKey,
     {
@@ -50,7 +57,7 @@ module.exports.signTokenAndDeliver = (req, res) => {
       mode: CryptoJS.mode.CBC,
       padding: CryptoJS.pad.Pkcs7,
     }
-  );
+  );*/
   const tokenUUID = uuidv4();
   const tokenUUIDEncrypted = CryptoJS.AES.encrypt(
     tokenUUID,
@@ -60,7 +67,7 @@ module.exports.signTokenAndDeliver = (req, res) => {
     id: user.id,
     name: user.name,
     activated: user.activated,
-    role: roleEncrypted.toString(),
+    role: /*roleEncrypted.toString()*/ user.role,
     tokenUUID: tokenUUIDEncrypted.toString(),
   };
   jwt.sign(
