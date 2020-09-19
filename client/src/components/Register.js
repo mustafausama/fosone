@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
-import FacebookLogin from "react-facebook-login";
 import axios from "axios";
+
+import FacebookLogin from "react-facebook-login";
 import Autosuggest from "react-autosuggest";
 
 import {
@@ -20,10 +21,10 @@ import {
   ModalFooter,
   Media,
   FormFeedback,
+  UncontrolledAlert,
 } from "reactstrap";
 
 import {
-  isEmpty,
   isLength,
   isAlphanumeric,
   isNumeric,
@@ -33,14 +34,18 @@ import {
   isAfter,
   equals,
 } from "validator";
+import { inject } from "mobx-react";
 
 const passwordValidator = require("password-validator");
 
 const countryList = require("country-list");
 
 const countries = countryList.getData();
-
+@inject("authStore")
 class Register extends Component {
+  componentDidMount() {
+    if (this.props.authStore.loggedIn) this.setState({ redirect: true });
+  }
   state = {
     isLoggedIn: false,
     firstName: "",
@@ -59,22 +64,30 @@ class Register extends Component {
     countryValue: "",
     isModalOpen: false,
     redirect: false,
+    valid: {},
+    invalid: {},
   };
 
   validate = {
-    firstName: (key) => {
+    firstName: () => {
       const { firstName } = this.state;
       if (!isLength(firstName, { min: 2, max: 26 }))
-        this.setInvalid(key, "First name should be 2 to 26 characters long");
-      else this.setValid(key);
+        this.setInvalid(
+          "firstName",
+          "First name should be 2 to 26 characters long"
+        );
+      else this.setValid("firstName");
     },
-    lastName: (key) => {
+    lastName: () => {
       const { lastName } = this.state;
       if (!isLength(lastName, { min: 2, max: 26 }))
-        this.setInvalid(key, "Last name should be 2 to 26 characters long");
-      else this.setValid(key);
+        this.setInvalid(
+          "lastName",
+          "Last name should be 2 to 26 characters long"
+        );
+      else this.setValid("lastName");
     },
-    email: (key) => {
+    email: () => {
       const { email } = this.state;
       if (
         !isEmail(email, {
@@ -82,8 +95,8 @@ class Register extends Component {
           allow_ip_domain: true,
         })
       )
-        this.setInvalid(key, "Invalid Email");
-      else this.setValid(key);
+        this.setInvalid("email", "Invalid Email");
+      else this.setValid("email");
     },
     username: (key) => {
       const { username } = this.state;
@@ -93,28 +106,22 @@ class Register extends Component {
         isNumeric(username.charAt(0))
       )
         this.setInvalid(
-          key,
+          "username",
           "Username should be 2 to 20 characters long, contain only aphanumeric chacaters, have an alphabet character as the first character"
         );
-      else this.setValid(key);
+      else this.setValid("username");
     },
-    phone: (key) => {
+    phone: () => {
       const { phone } = this.state;
-      if (!isEmpty(phone) && !isMobilePhone(phone, "any", { strictMode: true }))
+      if (!isMobilePhone(phone, "any", { strictMode: true }))
         this.setInvalid(
-          key,
+          "phone",
           "Phone number is incorrect. You should enter + sign and country code"
         );
-      else this.setValid(key);
+      else this.setValid("phone");
     },
-    password1: (key) => {
-      const {
-        password1,
-        firstName,
-        lastName,
-        username,
-        birthdate,
-      } = this.state;
+    password1: () => {
+      const { password1 } = this.state;
       const schema = new passwordValidator();
       schema
         .is()
@@ -131,47 +138,46 @@ class Register extends Component {
         .symbols()
         .has()
         .not()
-        .spaces()
-        .is()
-        .not()
-        .oneOf([firstName, lastName, username, birthdate]);
+        .spaces();
       if (!schema.validate(password1))
         this.setInvalid(
-          key,
-          "Password is invalid. Password should be 8 to 100 characters. It should contain at least one lowercase character, one uppercase character, one digit, and one symbol. It should not contain spaces, your first name, your last name, your username, or your date of birth"
+          "password1",
+          "Password should be 8 to 100 characters. It should contain at least one lowercase character, one uppercase character, one digit, and one symbol. It should not contain spaces."
         );
-      else this.setValid(key);
+      else this.setValid("password1");
     },
-    password2: (key) => {
+    password2: () => {
       const { password1, password2 } = this.state;
-      console.log(password1, " ", password2);
-      if (!equals(password1, password2))
-        this.setInvalid(key, "Passwords should match");
-      else this.setValid(key);
+      if (!password2 || !equals(password1, password2))
+        this.setInvalid("password2", "Passwords should match");
+      else {
+        this.setValid("password2");
+      }
     },
-    birthdate: (key) => {
+    birthdate: () => {
       const { birthdate } = this.state;
       const ageLimit = 12;
       const dateLimit = new Date();
-      dateLimit.setFullYear(dateLimit.getFullYear - ageLimit);
+      dateLimit.setFullYear(dateLimit.getFullYear() - ageLimit);
       if (!isDate(birthdate) || isAfter(birthdate, dateLimit.toDateString()))
         this.setInvalid(
-          key,
+          "birthdate",
           "Invalid date of birth. You should be 12 years or older"
         );
+      else this.setValid("birthdate");
     },
   };
 
   setValid = (key) => {
     this.setState({
-      ["invalid" + key]: undefined,
-      ["valid" + key]: true,
+      invalid: { ...this.state.invalid, [key]: undefined },
+      valid: { ...this.state.valid, [key]: true },
     });
   };
   setInvalid = (key, msg) => {
     this.setState({
-      ["invalid" + key]: msg,
-      ["valid" + key]: undefined,
+      invalid: { ...this.state.invalid, [key]: msg },
+      valid: { ...this.state.valid, [key]: false },
     });
   };
 
@@ -243,32 +249,41 @@ class Register extends Component {
     this.modalToggle();
   };
 
-  onBlur = (key) => {
-    this.setState({
-      ["touched" + key]: true,
-    });
-  };
-
   onChange = async (key, value) => {
     await this.setState({
       [key]: value,
     });
-    this.validate[key](key);
+    this.validate[key].call();
   };
 
   onSubmit = async (e) => {
     e.preventDefault();
+    await this.validate.firstName();
+    await this.validate.lastName();
+    await this.validate.username();
+    if (!this.state.fbUserID) {
+      await this.validate.password1();
+      await this.validate.password2();
+    }
     if (
-      !this.state.validfirstName ||
-      !this.state.validlastName ||
-      !this.state.validusername ||
+      !this.state.fbUserID &&
+      !this.state.valid.email &&
+      !this.state.valid.phone
+    ) {
+      await this.validate.email();
+      await this.validate.phone();
+    }
+    if (
+      !this.state.valid.firstName ||
+      !this.state.valid.lastName ||
+      !this.state.valid.username ||
       (!this.state.fbUserID &&
-        !this.state.validemail &&
-        !this.state.validphone) ||
+        !this.state.valid.email &&
+        !this.state.valid.phone) ||
       (!this.state.fbUserID &&
-        (!this.state.validpassword1 || !this.state.validpassword2))
+        (!this.state.valid.password1 || !this.state.valid.password2))
     )
-      return console.log("Haha");
+      return;
     const response = await axios({
       method: "POST",
       url: "http://localhost:5007/api/users/register",
@@ -287,57 +302,18 @@ class Register extends Component {
         country: this.state.country,
       },
     }).catch((err) => {
-      Object.keys(err.response.data).forEach((key) => {
-        this.setInvalid(key, err.response.data[key]);
-      });
+      console.log(err);
+      if (err.response && err.response.data)
+        Object.keys(err.response.data).forEach((key) => {
+          this.setInvalid(key, err.response.data[key]);
+        });
     });
     if (!response) return;
-    this.redirect();
-  };
-
-  redirect = () => {
     this.setState({ redirect: true });
   };
 
   render() {
-    if (this.state.redirect) return <Redirect to="/" push="/hello/" />;
-
-    const Field = ({ label, n, name, placeholder, text, type }) => (
-      <Col key={name} xs={12} md={12 / n}>
-        <FormGroup row>
-          <Label xs={12} for={name}>
-            {label}
-          </Label>
-          <Col xs={12}>
-            <Input
-              valid={
-                this.state["touched" + name] &&
-                !this.state["invalid" + name] &&
-                this.state["valid" + name]
-              }
-              invalid={
-                this.state["invalid" + name] && !this.state["valid" + name]
-              }
-              type={type}
-              name={name}
-              id={name}
-              placeholder={placeholder}
-              value={this.state[name]}
-              onChange={(e) => {
-                this.onChange(e.target.name, e.target.value);
-              }}
-              onBlur={(e) => {
-                this.onBlur(e.target.name);
-              }}
-            />
-            {this.state["invalid" + name] && (
-              <FormFeedback>{this.state["invalid" + name]}</FormFeedback>
-            )}
-            {text && <FormText>{text}</FormText>}
-          </Col>
-        </FormGroup>
-      </Col>
-    );
+    if (this.state.redirect) return <Redirect to="/" />;
 
     const renderSuggestion = (suggestion) => <div>{suggestion.name}</div>;
     return (
@@ -389,63 +365,198 @@ class Register extends Component {
           <Form onSubmit={this.onSubmit} className="mt-4">
             {/* mt-4 To be removed */}
             <Row>
-              {Field({
-                label: "First Name",
-                n: 2,
-                name: "firstName",
-                placeholder: "Enter your first name",
-                type: "text",
-              })}
-              {Field({
-                label: "Last Name",
-                n: 2,
-                name: "lastName",
-                placeholder: "Enter your last name",
-                type: "text",
-              })}
+              <Col xs={12} md={6}>
+                <FormGroup row>
+                  <Label xs={12} for="firstName">
+                    First Name
+                  </Label>
+                  <Col xs={12}>
+                    <Input
+                      valid={this.state.valid.firstName}
+                      invalid={this.state.invalid.firstName}
+                      type="text"
+                      name="firstName"
+                      id="firstName"
+                      placeholder="Enter your first name"
+                      value={this.state.firstName}
+                      onChange={(e) => {
+                        this.onChange(e.target.name, e.target.value);
+                      }}
+                    />
+                    {this.state.invalid.firstName && (
+                      <FormFeedback>
+                        {this.state.invalid.firstName}
+                      </FormFeedback>
+                    )}
+                  </Col>
+                </FormGroup>
+              </Col>
+              <Col xs={12} md={6}>
+                <FormGroup row>
+                  <Label xs={12} for="lastName">
+                    Last Name
+                  </Label>
+                  <Col xs={12}>
+                    <Input
+                      valid={this.state.valid.lastName}
+                      invalid={this.state.invalid.lastName}
+                      type="text"
+                      name="lastName"
+                      id="lastName"
+                      placeholder="Enter your last name"
+                      value={this.state.lastName}
+                      onChange={(e) => {
+                        this.onChange(e.target.name, e.target.value);
+                      }}
+                    />
+                    {this.state.invalid.lastName && (
+                      <FormFeedback>{this.state.invalid.lastName}</FormFeedback>
+                    )}
+                  </Col>
+                </FormGroup>
+              </Col>
             </Row>
 
             <Row>
-              {Field({
-                label: "Username",
-                n: 3,
-                name: "username",
-                placeholder: "Enter your username",
-                type: "text",
-              })}
-              {Field({
-                label: "Email",
-                n: 3,
-                name: "email",
-                placeholder: "Enter your email",
-                text: "Either an email or a phone number is required",
-                type: "email",
-              })}
-              {Field({
-                label: "Date of birth",
-                n: 3,
-                name: "birthdate",
-                text: "You should be 12 years or older as of today",
-                type: "date",
-              })}
+              <Col xs={12} md={4}>
+                <FormGroup row>
+                  <Label xs={12} for="username">
+                    Username
+                  </Label>
+                  <Col xs={12}>
+                    <Input
+                      valid={this.state.valid.username}
+                      invalid={this.state.invalid.username}
+                      type="text"
+                      name="username"
+                      id="username"
+                      placeholder="Enter your username"
+                      value={this.state.username}
+                      onChange={(e) => {
+                        this.onChange(e.target.name, e.target.value);
+                      }}
+                    />
+                    {this.state.invalid.username && (
+                      <FormFeedback>{this.state.invalid.username}</FormFeedback>
+                    )}
+                  </Col>
+                </FormGroup>
+              </Col>
+              <Col xs={12} md={4}>
+                <FormGroup row>
+                  <Label xs={12} for="email">
+                    Email address
+                  </Label>
+                  <Col xs={12}>
+                    <Input
+                      valid={this.state.valid.email}
+                      invalid={this.state.invalid.email}
+                      type="email"
+                      name="email"
+                      id="email"
+                      placeholder="Enter your email address"
+                      value={this.state.email}
+                      onChange={(e) => {
+                        this.onChange(e.target.name, e.target.value);
+                      }}
+                    />
+                    {this.state.invalid.email && (
+                      <FormFeedback>{this.state.invalid.email}</FormFeedback>
+                    )}
+                    <FormText>
+                      Either an email or a phone number is required
+                    </FormText>
+                  </Col>
+                </FormGroup>
+              </Col>
+              <Col key="birthdate" xs={12} md={4}>
+                <FormGroup row>
+                  <Label xs={12} for="birthdate">
+                    Date of birth
+                  </Label>
+                  <Col xs={12}>
+                    <Input
+                      valid={this.state.valid.birthdate}
+                      invalid={this.state.invalid.birthdate}
+                      type="date"
+                      name="birthdate"
+                      id="birthdate"
+                      value={this.state.birthdate}
+                      onChange={(e) => {
+                        this.onChange(e.target.name, e.target.value);
+                      }}
+                    />
+                    {this.state.invalid.birthdate && (
+                      <FormFeedback>
+                        {this.state.invalid.birthdate}
+                      </FormFeedback>
+                    )}
+                    <FormText>
+                      You should be 12 years or older as of today
+                    </FormText>
+                  </Col>
+                </FormGroup>
+              </Col>
             </Row>
             <Row>
-              {Field({
-                label: "Password",
-                n: 2,
-                name: "password1",
-                placeholder: "Enter a password",
-                text:
-                  "Please enter a strong password that contains: lowercase characters [a b c], uppercase characters [A B C], digits [1 2 3], and symbols [@ # $]. Password should not contain spaces at the beginning or at the end",
-                type: "password",
-              })}
-              {Field({
-                label: "Repeat password",
-                n: 2,
-                name: "password2",
-                placeholder: "Enter the password again",
-                type: "password",
-              })}
+              <Col xs={12} md={6}>
+                <FormGroup row>
+                  <Label xs={12} for="password1">
+                    Password
+                  </Label>
+                  <Col xs={12}>
+                    <Input
+                      valid={this.state.valid.password1}
+                      invalid={this.state.invalid.password1}
+                      type="password"
+                      name="password1"
+                      id="password1"
+                      placeholder="Enter a password"
+                      value={this.state.password1}
+                      onChange={(e) => {
+                        this.onChange(e.target.name, e.target.value);
+                      }}
+                    />
+                    {this.state.invalid.password1 && (
+                      <FormFeedback>
+                        {this.state.invalid.password1}
+                      </FormFeedback>
+                    )}
+                    <FormText>
+                      Please enter a strong password that contains: lowercase
+                      characters [a b c], uppercase characters [A B C], digits
+                      [1 2 3], and symbols [@ # $]. Password should not contain
+                      spaces at the beginning or at the end
+                    </FormText>
+                  </Col>
+                </FormGroup>
+              </Col>
+              <Col xs={12} md={6}>
+                <FormGroup row>
+                  <Label xs={12} for="password2">
+                    Repeat password
+                  </Label>
+                  <Col xs={12}>
+                    <Input
+                      valid={this.state.valid.password2}
+                      invalid={this.state.invalid.password2}
+                      type="password"
+                      name="password2"
+                      id="password2"
+                      placeholder="Enter your password again"
+                      value={this.state.password2}
+                      onChange={(e) => {
+                        this.onChange(e.target.name, e.target.value);
+                      }}
+                    />
+                    {this.state.invalid.password2 && (
+                      <FormFeedback>
+                        {this.state.invalid.password2}
+                      </FormFeedback>
+                    )}
+                  </Col>
+                </FormGroup>
+              </Col>
             </Row>
             <Row>
               <Col xs={12} md={6}>
@@ -458,7 +569,6 @@ class Register extends Component {
                       theme={{
                         container: "input-group mb-3",
                         input: "form-control",
-                        inputFocused: "react-autosuggest__input--focused",
                         suggestionsContainer: "container dropdown",
                         suggestionsList: "dropdown-menu show",
                         suggestion: "dropdown-item btn",
@@ -479,31 +589,46 @@ class Register extends Component {
                         onChange: this.countryOnChange,
                       }}
                     />
-                    {this.state.invalidcountry && (
-                      <FormText>{this.state.invalidcountry}</FormText>
-                    )}
-                    {this.state.touchedcountry && this.state.validcountry && (
-                      <FormText valid>{this.state.validcountry}</FormText>
+                    {this.state.invalid.country && (
+                      <UncontrolledAlert color="danger " fade={true}>
+                        {this.state.invalid.country}
+                      </UncontrolledAlert>
                     )}
                   </Col>
                 </FormGroup>
               </Col>
-              {Field({
-                label: "Phone number",
-                n: 2,
-                name: "phone",
-                placeholder: "Enter your phone number",
-                text: "Either an email or a phone number is required",
-                type: "tel",
-              })}
+              <Col xs={12} md={6}>
+                <FormGroup row>
+                  <Label xs={12} for="phone">
+                    Phone number
+                  </Label>
+                  <Col xs={12}>
+                    <Input
+                      valid={this.state.valid.phone}
+                      invalid={this.state.invalid.phone}
+                      type="tel"
+                      name="phone"
+                      id="phone"
+                      placeholder="Enter your phone number"
+                      value={this.state.phone}
+                      onChange={(e) => {
+                        this.onChange(e.target.name, e.target.value);
+                      }}
+                    />
+                    {this.state.invalid.phone && (
+                      <FormFeedback>{this.state.invalid.phone}</FormFeedback>
+                    )}
+                    <FormText>
+                      Either an email or a phone number is required.
+                      <br />
+                      Please include + sign and country code.
+                    </FormText>
+                  </Col>
+                </FormGroup>
+              </Col>
             </Row>
-            <FormGroup
-              row
-              style={{
-                alignItems: "center",
-              }}
-            >
-              <Col xs={6}>
+            <FormGroup row>
+              <Col xs={8}>
                 <FacebookLogin
                   appId="1222306931451693"
                   autoLoad={false}
@@ -514,14 +639,14 @@ class Register extends Component {
                 />
                 {this.state.fbUserID && (
                   <FormText>
-                    You account will be linked to your Facebook account
+                    You FoSoNe account will be linked to your Facebook account
                   </FormText>
                 )}
               </Col>
-              <Col xs={6}>
+              <Col xs={4}>
                 <Button
                   color="secondary"
-                  className="btn-lg pull-right "
+                  className="btn-lg pull-right mt-1"
                   type="submit"
                 >
                   Sign Up
