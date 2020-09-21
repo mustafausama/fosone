@@ -30,17 +30,17 @@ router.post(
 // @access  Private: RES_FIND
 router.get("/", permission("RES_FIND"), findRestaurantsParams);
 
-// @route   GET api/restaurants/resturant/all
+// @route   GET api/restaurants/restaurant/all
 // @desc    Get all restaurants
 // @access  Private: RES_FIND
 router.get("/all", permission("RES_FIND"), getAllRestaurants);
 
-// @route   GET api/restaurants/resturant/:resID
+// @route   GET api/restaurants/restaurant/:resID
 // @desc    Return a restaurant
 // @access  Private: RES_FIND
 router.get("/:resID", permission("RES_FIND"), getRestaurant);
 
-// @route   PUT api/restaurants/resturant/:resID
+// @route   PUT api/restaurants/restaurant/:resID
 // @desc    Update an existing restaurant
 // @access  Private: RES_EDIT
 router.put(
@@ -51,7 +51,7 @@ router.put(
   updateRestaurant
 );
 
-// @route   DELETE api/restaurants/resturant/:resID
+// @route   DELETE api/restaurants/restaurant/:resID
 // @desc    Delete a restaurant
 // @access  Private: RES_REMOVE
 router.delete("/:resID", permission("RES_REMOVE"), deleteRestaurant);

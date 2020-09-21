@@ -1,17 +1,10 @@
 const isEmptyObject = require("is-empty-object");
 
-const { isEmpty, isLength, isNumeric } = require("validator");
-
-const countryList = require("country-list");
-
-const { isLatitude, isLongitude } = require("../../jsUtils");
+const { isEmpty, isLength } = require("validator");
 
 module.exports.validateCategory = (req, res, next) => {
   const errors = {};
-  var { uName, title, admin } = req.body;
-
-  //if (admins) admins.push(req.user.id);
-  //else admins = [req.user.id];
+  var { uName, title } = req.body;
 
   if (!uName || isEmpty((uName = uName.trim())))
     errors.uName = "Category unique name is required";

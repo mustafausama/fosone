@@ -13,7 +13,7 @@ import {
 import { NavLink } from "react-router-dom";
 import { inject, observer } from "mobx-react";
 
-@inject("authStore")
+@inject("authStore", "boardStore")
 @observer
 class Header extends Component {
   constructor(props) {
@@ -27,7 +27,24 @@ class Header extends Component {
     this.setState({ isNavOpen: !this.state.isNavOpen });
   };
 
+  renderRoutes = (dashboards, url) =>
+    Object.keys(dashboards).map((path) => {
+      if (!path.startsWith("/")) return undefined;
+      return [].concat(
+        this.renderRoutes(dashboards[path], url.concat(path)),
+        dashboards[path].label &&
+          this.props.authStore.authorized(dashboards[path].permission) ? (
+          <NavItem>
+            <NavLink to={url} className="nav-link" activeClassName="active">
+              {dashboards[path].label}
+            </NavLink>
+          </NavItem>
+        ) : undefined
+      );
+    });
+
   render() {
+    const { dashboards } = this.props.boardStore;
     return (
       <div>
         <Navbar color="light" light expand="md">
@@ -60,17 +77,7 @@ class Header extends Component {
                     </NavItem>
                   </>
                 )}
-                {this.props.authStore.authorized("RES_NEW") && (
-                  <NavItem>
-                    <NavLink
-                      to="/new-restaurant"
-                      className="nav-link"
-                      activeClassName="active"
-                    >
-                      New Restaurant
-                    </NavLink>
-                  </NavItem>
-                )}
+                {this.renderRoutes(dashboards, "")}
               </Nav>
               {this.props.authStore.loggedIn && (
                 <Button

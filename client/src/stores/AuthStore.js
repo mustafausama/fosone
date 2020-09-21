@@ -3,10 +3,6 @@ import { action, observable } from "mobx";
 import jwt from "jsonwebtoken";
 
 class AuthStore {
-  constructor(rootStore) {
-    this.rootStore = rootStore;
-  }
-
   @observable loggedIn = false;
   @observable permissions = null;
   @observable name = null;

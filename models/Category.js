@@ -17,12 +17,6 @@ const CategorySchema = new Schema({
       ref: "Restaurant",
     },
   ],
-  admins: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
 });
 
 module.exports = Category = mongoose.model("Category", CategorySchema);

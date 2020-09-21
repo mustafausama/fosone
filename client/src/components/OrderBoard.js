@@ -15,7 +15,6 @@ import {
   CardText,
   Button,
   CardHeader,
-  Jumbotron,
   Form,
   Input,
   InputGroup,
@@ -205,352 +204,338 @@ class OrderBoard extends Component {
   render() {
     return (
       <>
-        <Jumbotron>
-          <Container>
-            <h1 className="display-3">Wanna order food?</h1>
-            <p className="lead">
-              Just choose whatever suits you right now. In each option there are
-              plenty of options to choose from. Just tell us what is more
-              convenient for you
-            </p>
-            <Row className="mt-4">
-              {this.store.showCards && (
-                <>
-                  <Col xs={12} md={6} lg={4}>
-                    <Card className="border-0 mb-4">
-                      <CardHeader className="border-0 text-center">
-                        <CardTitle>At home?</CardTitle>
-                      </CardHeader>
-                      <CardBody>
-                        <CardText className="text-justify">
-                          Order food to be delivered to your door
-                        </CardText>
-                      </CardBody>
-                      <Button
-                        color="secondary"
-                        onClick={() => this.store.set("delivery", true)}
-                      >
-                        Delivery
-                      </Button>
-                    </Card>
-                  </Col>
-                  <Col xs={12} md={6} lg={4}>
-                    <Card className="border-0 mb-4">
-                      <CardHeader className="border-0 text-center">
-                        <CardTitle>Outside?</CardTitle>
-                      </CardHeader>
-                      <CardBody>
-                        <CardText className="text-justify">
-                          Order food and pick it up on the go
-                        </CardText>
-                      </CardBody>
-                      <Button
-                        color="success"
-                        onClick={() => this.store.set("takeaway", true)}
-                      >
-                        Takeaway
-                      </Button>
-                    </Card>
-                  </Col>
-                  <Col xs={12} md={6} lg={4}>
-                    <Card className="border-0 mb-4">
-                      <CardHeader className="border-0 text-center">
-                        <CardTitle>In a restaurant?</CardTitle>
-                      </CardHeader>
-                      <CardBody>
-                        <CardText>
-                          Order food contact-less while on-site
-                        </CardText>
-                      </CardBody>
-                      <Button
-                        color="primary"
-                        onClick={() => this.store.set("onSite", true)}
-                      >
-                        On-site
-                      </Button>
-                    </Card>
-                  </Col>
-                </>
-              )}
+        <Container>
+          <h1 className="display-3">Wanna order food?</h1>
+          <p className="lead">
+            Just choose whatever suits you right now. In each option there are
+            plenty of options to choose from. Just tell us what is more
+            convenient for you
+          </p>
+          <Row className="mt-4">
+            {this.store.showCards && (
+              <>
+                <Col xs={12} md={6} lg={4}>
+                  <Card className="border-0 mb-4">
+                    <CardHeader className="border-0 text-center">
+                      <CardTitle>At home?</CardTitle>
+                    </CardHeader>
+                    <CardBody>
+                      <CardText className="text-justify">
+                        Order food to be delivered to your door
+                      </CardText>
+                    </CardBody>
+                    <Button
+                      color="secondary"
+                      onClick={() => this.store.set("delivery", true)}
+                    >
+                      Delivery
+                    </Button>
+                  </Card>
+                </Col>
+                <Col xs={12} md={6} lg={4}>
+                  <Card className="border-0 mb-4">
+                    <CardHeader className="border-0 text-center">
+                      <CardTitle>Outside?</CardTitle>
+                    </CardHeader>
+                    <CardBody>
+                      <CardText className="text-justify">
+                        Order food and pick it up on the go
+                      </CardText>
+                    </CardBody>
+                    <Button
+                      color="success"
+                      onClick={() => this.store.set("takeaway", true)}
+                    >
+                      Takeaway
+                    </Button>
+                  </Card>
+                </Col>
+                <Col xs={12} md={6} lg={4}>
+                  <Card className="border-0 mb-4">
+                    <CardHeader className="border-0 text-center">
+                      <CardTitle>In a restaurant?</CardTitle>
+                    </CardHeader>
+                    <CardBody>
+                      <CardText>Order food contact-less while on-site</CardText>
+                    </CardBody>
+                    <Button
+                      color="primary"
+                      onClick={() => this.store.set("onSite", true)}
+                    >
+                      On-site
+                    </Button>
+                  </Card>
+                </Col>
+              </>
+            )}
 
-              <Col xs={12} md={6} lg={4}>
-                <Card className="border-0 mb-4">
-                  <CardHeader className="border-0 text-center">
-                    <CardTitle>Category</CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <CardText>Choose a category of food</CardText>
-                  </CardBody>
-                  <Dropdown
-                    isOpen={this.state.dropdownOpen1}
-                    toggle={(e) => {
-                      if (e.target.tagName === "BUTTON")
-                        this.toggleDropToggle1();
-                    }}
-                    direction="up"
+            <Col xs={12} md={6} lg={4}>
+              <Card className="border-0 mb-4">
+                <CardHeader className="border-0 text-center">
+                  <CardTitle>Category</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <CardText>Choose a category of food</CardText>
+                </CardBody>
+                <Dropdown
+                  isOpen={this.state.dropdownOpen1}
+                  toggle={(e) => {
+                    if (e.target.tagName === "BUTTON") this.toggleDropToggle1();
+                  }}
+                  direction="up"
+                >
+                  <DropdownToggle
+                    style={{ width: "100%", marginTop: "0" }}
+                    caret
+                    color="info"
                   >
-                    <DropdownToggle
-                      style={{ width: "100%", marginTop: "0" }}
-                      caret
-                      color="info"
-                    >
-                      Select categories
-                    </DropdownToggle>
-                    <DropdownMenu>
-                      <DropdownItem header>Search categories</DropdownItem>
-                      <DropdownItem>
-                        <Input
-                          name="searchCats"
-                          value={this.store.findCatsInput}
-                          onChange={this.store.findCategories}
-                          onClick={(e) => e.stopPropagation()}
+                    Select categories
+                  </DropdownToggle>
+                  <DropdownMenu>
+                    <DropdownItem header>Search categories</DropdownItem>
+                    <DropdownItem>
+                      <Input
+                        name="searchCats"
+                        value={this.store.findCatsInput}
+                        onChange={this.store.findCategories}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </DropdownItem>
+                    <DropdownItem divider />
+                    {this.store.catSuggestions.map((cat, id) => (
+                      <DropdownItem onClick={(e) => this.store.toggleCat(id)}>
+                        <CustomInput
+                          type="checkbox"
+                          label={cat.title}
+                          checked={cat.checked}
                         />
                       </DropdownItem>
-                      <DropdownItem divider />
-                      {this.store.catSuggestions.map((cat, id) => (
-                        <DropdownItem onClick={(e) => this.store.toggleCat(id)}>
-                          <CustomInput
-                            type="checkbox"
-                            label={cat.title}
-                            checked={cat.checked}
-                          />
-                        </DropdownItem>
-                      ))}
-                    </DropdownMenu>
-                  </Dropdown>
-                </Card>
-              </Col>
-              <Col xs={12} md={6} lg={4}>
-                <Card className="border-0 mb-4">
-                  <CardHeader className="border-0 text-center">
-                    <CardTitle>KFC or McDonald's?</CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <CardText>Choose a restaurant group/chain</CardText>
-                  </CardBody>
-                  <Dropdown
-                    isOpen={this.state.dropdownOpen2}
-                    toggle={(e) => {
-                      if (e.target.tagName === "BUTTON")
-                        this.toggleDropToggle2();
-                    }}
-                    direction="up"
+                    ))}
+                  </DropdownMenu>
+                </Dropdown>
+              </Card>
+            </Col>
+            <Col xs={12} md={6} lg={4}>
+              <Card className="border-0 mb-4">
+                <CardHeader className="border-0 text-center">
+                  <CardTitle>KFC or McDonald's?</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <CardText>Choose a restaurant group/chain</CardText>
+                </CardBody>
+                <Dropdown
+                  isOpen={this.state.dropdownOpen2}
+                  toggle={(e) => {
+                    if (e.target.tagName === "BUTTON") this.toggleDropToggle2();
+                  }}
+                  direction="up"
+                >
+                  <DropdownToggle
+                    style={{ width: "100%", marginTop: "0" }}
+                    caret
+                    color="warning"
                   >
-                    <DropdownToggle
-                      style={{ width: "100%", marginTop: "0" }}
-                      caret
-                      color="warning"
-                    >
-                      Select groups
-                    </DropdownToggle>
-                    <DropdownMenu>
-                      <DropdownItem header>Search groups</DropdownItem>
-                      <DropdownItem>
-                        <Input
-                          name="searchGrps"
-                          value={this.store.findGrpsInput}
-                          onChange={this.store.findGroups}
-                          onClick={(e) => e.stopPropagation()}
+                    Select groups
+                  </DropdownToggle>
+                  <DropdownMenu>
+                    <DropdownItem header>Search groups</DropdownItem>
+                    <DropdownItem>
+                      <Input
+                        name="searchGrps"
+                        value={this.store.findGrpsInput}
+                        onChange={this.store.findGroups}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </DropdownItem>
+                    <DropdownItem divider />
+                    {this.store.grpSuggestions.map((grp, id) => (
+                      <DropdownItem onClick={(e) => this.store.toggleGrp(id)}>
+                        <CustomInput
+                          type="checkbox"
+                          label={grp.title}
+                          checked={grp.checked}
                         />
                       </DropdownItem>
-                      <DropdownItem divider />
-                      {this.store.grpSuggestions.map((grp, id) => (
-                        <DropdownItem onClick={(e) => this.store.toggleGrp(id)}>
+                    ))}
+                  </DropdownMenu>
+                </Dropdown>
+              </Card>
+            </Col>
+            <Col xs={12} md={6} lg={4}>
+              <Card className="border-0 mb-4">
+                <CardHeader className="border-0 text-center">
+                  <CardTitle>Near</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <CardText>Choose a restaurant near you</CardText>
+                </CardBody>
+                <Button color="danger" onClick={this.store.getLocation}>
+                  Get location
+                </Button>
+              </Card>
+            </Col>
+          </Row>
+          <Row>
+            {(this.store.cats.length ||
+              this.store.grps.length ||
+              this.store.delivery ||
+              this.store.takeaway ||
+              this.store.onSite ||
+              this.store.showSearch ||
+              (this.store.latitude && this.store.longitude)) &&
+              (this.store.set("showCards", false) || true) &&
+              (this.store.set("showSearch", true) || true) && (
+                <Col xs={12}>
+                  <Form className="mb-4" onSubmit={this.store.findRestaurants}>
+                    <InputGroup>
+                      <InputGroupAddon addonType="prepend">
+                        <InputGroupText>
                           <CustomInput
                             type="checkbox"
-                            label={grp.title}
-                            checked={grp.checked}
-                          />
-                        </DropdownItem>
-                      ))}
-                    </DropdownMenu>
-                  </Dropdown>
-                </Card>
-              </Col>
-              <Col xs={12} md={6} lg={4}>
-                <Card className="border-0 mb-4">
-                  <CardHeader className="border-0 text-center">
-                    <CardTitle>Near</CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <CardText>Choose a restaurant near you</CardText>
-                  </CardBody>
-                  <Button color="danger" onClick={this.store.getLocation}>
-                    Get location
-                  </Button>
-                </Card>
-              </Col>
-            </Row>
-            <Row>
-              {(this.store.cats.length ||
-                this.store.grps.length ||
-                this.store.delivery ||
-                this.store.takeaway ||
-                this.store.onSite ||
-                this.store.showSearch ||
-                (this.store.latitude && this.store.longitude)) &&
-                (this.store.set("showCards", false) || true) &&
-                (this.store.set("showSearch", true) || true) && (
-                  <Col xs={12}>
-                    <Form
-                      className="mb-4"
-                      onSubmit={this.store.findRestaurants}
-                    >
-                      <InputGroup>
-                        <InputGroupAddon addonType="prepend">
-                          <InputGroupText>
-                            <CustomInput
-                              type="checkbox"
-                              id="delivery-filter"
-                              label="Delivery"
-                              checked={this.store.delivery}
-                              onClick={() =>
-                                this.store.set("delivery", !this.store.delivery)
-                              }
-                            />
-                          </InputGroupText>
-                        </InputGroupAddon>
-                        <InputGroupAddon addonType="prepend">
-                          <InputGroupText>
-                            <CustomInput
-                              type="checkbox"
-                              id="takeaway-filter"
-                              label="Takeaway"
-                              checked={this.store.takeaway}
-                              onClick={() =>
-                                this.store.set("takeaway", !this.store.takeaway)
-                              }
-                            />
-                          </InputGroupText>
-                        </InputGroupAddon>
-                        <InputGroupAddon addonType="prepend">
-                          <InputGroupText>
-                            <CustomInput
-                              type="checkbox"
-                              id="on-site-filter"
-                              label="On-site"
-                              checked={this.store.onSite}
-                              onClick={() =>
-                                this.store.set("onSite", !this.store.onSite)
-                              }
-                            />
-                          </InputGroupText>
-                        </InputGroupAddon>
-                        <Input
-                          placeholder="Search name..."
-                          style={{ minWidth: "150px" }}
-                          value={this.store.name}
-                          onChange={(e) =>
-                            this.store.set("name", e.target.value)
-                          }
-                        />
-                        {this.store.latitude && this.store.longitude && (
-                          <Input
-                            name="distance"
-                            type="text"
-                            style={{ minWidth: "150px", maxWidth: "150px" }}
-                            placeholder="Distance (km: 2.2)"
-                            value={this.store.distance}
-                            required
-                            onChange={(e) =>
-                              this.store.set(
-                                "distance",
-                                !isNaN(parseFloat(e.target.value)) ||
-                                  !e.target.value
-                                  ? e.target.value
-                                  : this.store.distance
-                              )
+                            id="delivery-filter"
+                            label="Delivery"
+                            checked={this.store.delivery}
+                            onClick={() =>
+                              this.store.set("delivery", !this.store.delivery)
                             }
                           />
-                        )}
-                        <InputGroupAddon addonType="append">
-                          <InputGroupText>
-                            <CustomInput
-                              type="checkbox"
-                              id="location-filter"
-                              label="Location"
-                              checked={
-                                this.store.latitude && this.store.longitude
-                              }
-                              onClick={() => {
-                                if (
-                                  this.store.latitude &&
-                                  this.store.longitude
-                                ) {
-                                  this.store.set("latitude", null);
-                                  this.store.set("longitude", null);
-                                } else this.store.getLocation();
-                              }}
-                            />
-                          </InputGroupText>
-                        </InputGroupAddon>
-                        <InputGroupButtonDropdown
-                          addonType="append"
-                          isOpen={this.state.dropdownOpen3}
-                          toggle={this.toggleDropToggle3}
-                        >
-                          <DropdownToggle caret>
-                            {this.store.minRating || "Rating"}
-                          </DropdownToggle>
-                          <DropdownMenu>
-                            <DropdownItem
-                              onClick={() => this.store.set("minRating", 4)}
-                            >
-                              {"> 4"}
-                            </DropdownItem>
-                            <DropdownItem
-                              onClick={() => this.store.set("minRating", 3)}
-                            >
-                              {"> 3"}
-                            </DropdownItem>
-                            <DropdownItem
-                              onClick={() => this.store.set("minRating", 2)}
-                            >
-                              {"> 2"}
-                            </DropdownItem>
-                            <DropdownItem
-                              onClick={() => this.store.set("minRating", 1)}
-                            >
-                              {"> 1"}
-                            </DropdownItem>
-                            <DropdownItem
-                              onClick={() => this.store.set("minRating", null)}
-                            >
-                              All
-                            </DropdownItem>
-                          </DropdownMenu>
-                        </InputGroupButtonDropdown>
-                        <InputGroupAddon addonType="append">
-                          <Button color="secondary" outline type="submit">
-                            Search
-                          </Button>
-                        </InputGroupAddon>
-                      </InputGroup>
-                    </Form>
-                  </Col>
-                )}
-            </Row>
+                        </InputGroupText>
+                      </InputGroupAddon>
+                      <InputGroupAddon addonType="prepend">
+                        <InputGroupText>
+                          <CustomInput
+                            type="checkbox"
+                            id="takeaway-filter"
+                            label="Takeaway"
+                            checked={this.store.takeaway}
+                            onClick={() =>
+                              this.store.set("takeaway", !this.store.takeaway)
+                            }
+                          />
+                        </InputGroupText>
+                      </InputGroupAddon>
+                      <InputGroupAddon addonType="prepend">
+                        <InputGroupText>
+                          <CustomInput
+                            type="checkbox"
+                            id="on-site-filter"
+                            label="On-site"
+                            checked={this.store.onSite}
+                            onClick={() =>
+                              this.store.set("onSite", !this.store.onSite)
+                            }
+                          />
+                        </InputGroupText>
+                      </InputGroupAddon>
+                      <Input
+                        placeholder="Search name..."
+                        style={{ minWidth: "150px" }}
+                        value={this.store.name}
+                        onChange={(e) => this.store.set("name", e.target.value)}
+                      />
+                      {this.store.latitude && this.store.longitude && (
+                        <Input
+                          name="distance"
+                          type="text"
+                          style={{ minWidth: "150px", maxWidth: "150px" }}
+                          placeholder="Distance (km: 2.2)"
+                          value={this.store.distance}
+                          required
+                          onChange={(e) =>
+                            this.store.set(
+                              "distance",
+                              !isNaN(parseFloat(e.target.value)) ||
+                                !e.target.value
+                                ? e.target.value
+                                : this.store.distance
+                            )
+                          }
+                        />
+                      )}
+                      <InputGroupAddon addonType="append">
+                        <InputGroupText>
+                          <CustomInput
+                            type="checkbox"
+                            id="location-filter"
+                            label="Location"
+                            checked={
+                              this.store.latitude && this.store.longitude
+                            }
+                            onClick={() => {
+                              if (this.store.latitude && this.store.longitude) {
+                                this.store.set("latitude", null);
+                                this.store.set("longitude", null);
+                              } else this.store.getLocation();
+                            }}
+                          />
+                        </InputGroupText>
+                      </InputGroupAddon>
+                      <InputGroupButtonDropdown
+                        addonType="append"
+                        isOpen={this.state.dropdownOpen3}
+                        toggle={this.toggleDropToggle3}
+                      >
+                        <DropdownToggle caret>
+                          {this.store.minRating || "Rating"}
+                        </DropdownToggle>
+                        <DropdownMenu>
+                          <DropdownItem
+                            onClick={() => this.store.set("minRating", 4)}
+                          >
+                            {"> 4"}
+                          </DropdownItem>
+                          <DropdownItem
+                            onClick={() => this.store.set("minRating", 3)}
+                          >
+                            {"> 3"}
+                          </DropdownItem>
+                          <DropdownItem
+                            onClick={() => this.store.set("minRating", 2)}
+                          >
+                            {"> 2"}
+                          </DropdownItem>
+                          <DropdownItem
+                            onClick={() => this.store.set("minRating", 1)}
+                          >
+                            {"> 1"}
+                          </DropdownItem>
+                          <DropdownItem
+                            onClick={() => this.store.set("minRating", null)}
+                          >
+                            All
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </InputGroupButtonDropdown>
+                      <InputGroupAddon addonType="append">
+                        <Button color="secondary" outline type="submit">
+                          Search
+                        </Button>
+                      </InputGroupAddon>
+                    </InputGroup>
+                  </Form>
+                </Col>
+              )}
+          </Row>
 
-            {this.store.restaurantsLoaded && (
-              <Row>
-                {!this.store.restaurants && (
-                  <h3 className="text-center">Cannot find restaurants</h3>
-                )}
-                {this.store.restaurants &&
-                  this.store.restaurants.map((res) => (
-                    <Col xs={12} md={6} lg={4}>
-                      <Card className="mb-4">
-                        <CardHeader>
-                          <CardTitle>{res.name}</CardTitle>
-                        </CardHeader>
-                        <CardBody>{res.description}</CardBody>
-                      </Card>
-                    </Col>
-                  ))}
-              </Row>
-            )}
-          </Container>
-        </Jumbotron>
+          {this.store.restaurantsLoaded && (
+            <Row>
+              {!this.store.restaurants && (
+                <h3 className="text-center">Cannot find restaurants</h3>
+              )}
+              {this.store.restaurants &&
+                this.store.restaurants.map((res) => (
+                  <Col xs={12} md={6} lg={4}>
+                    <Card className="mb-4">
+                      <CardHeader>
+                        <CardTitle>{res.name}</CardTitle>
+                      </CardHeader>
+                      <CardBody>{res.description}</CardBody>
+                    </Card>
+                  </Col>
+                ))}
+            </Row>
+          )}
+        </Container>
       </>
     );
   }

@@ -6,12 +6,13 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { Provider } from "mobx-react";
-import Stores from "./stores";
 
-const rootStore = new Stores();
+import AuthStore from "./stores/AuthStore";
+import BoardStore from "./stores/BoardStore";
 
 const stores = {
-  authStore: rootStore.authStore,
+  authStore: new AuthStore(),
+  boardStore: new BoardStore(),
 };
 
 ReactDOM.render(

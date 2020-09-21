@@ -8,7 +8,7 @@ const isEmptyObject = require("is-empty-object");
 const { indexOfEquals, asyncForEach } = require("../../jsUtils");
 
 module.exports.saveCategory = async (req, res) => {
-  const { uName, title, picture, admins } = req.body;
+  const { uName, title, picture } = req.body;
   const category = await Category.findOne({ uName }).catch((err) => {
     console.log(err);
     res.status(500);
@@ -21,7 +21,6 @@ module.exports.saveCategory = async (req, res) => {
     uName,
     title,
     picture,
-    admins,
   });
   newCategory
     .save()
@@ -36,12 +35,11 @@ module.exports.saveCategory = async (req, res) => {
 
 module.exports.updateCategory = async (req, res) => {
   const { catID } = req.params;
-  const { uName, title, picture, admins } = req.body;
+  const { uName, title, picture } = req.body;
   const newCategory = {
     uName,
     title,
     picture,
-    admins,
   };
   if (!ObjectId.isValid(catID))
     return res.status(400).json({ invalidID: "Invalid ID" });
@@ -178,4 +176,23 @@ module.exports.categoryDeleteRestaurant = async (req, res) => {
       console.log(err);
       res.status(500);
     });
+};
+
+module.exports.getAllCategories = async (req, res) => {
+  const categories = await Category.find().catch();
+  if (!categories)
+    return res.status(200).json({ nocategories: "No categories" });
+  res.status(200).json(categories);
+};
+
+module.exports.getCategory = async (req, res) => {
+  const { catID } = req.params;
+  if (!ObjectId.isValid(catID))
+    return res.status(400).json({ catID: "Invalid category ID" });
+  const category = await Category.findById(catID).catch();
+  if (!category)
+    return res
+      .status(404)
+      .json({ nocategory: "No category with this ID exists" });
+  res.status(200).json(category);
 };

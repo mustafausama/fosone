@@ -10,6 +10,8 @@ const {
   categoryAddRestaurant,
   categoryDeleteRestaurant,
   deleteCategory,
+  getAllCategories,
+  getCategory,
 } = require("../../utils/controllers/restaurants/category");
 
 const {
@@ -19,6 +21,11 @@ const {
   validateFindRestaurants,
 } = require("../../utils/validation/restaurants/restaurant");
 const { permission } = require("../../utils/controllers/authentication/auth");
+
+// @route   GET api/restaurants/category
+// @desc    GET all categories
+// @access  Private: CATEGORY_VIEW
+router.get("/", permission("CATEGORY_VIEW"), getAllCategories);
 
 // @route   POST api/restaurants/category
 // @desc    Create a new category
@@ -34,6 +41,11 @@ router.put(
   validateCategory,
   updateCategory
 );
+
+// @route   GET api/restaurants/category/:catID
+// @desc    Returns a category by ID
+// @access  Private: CATEGORY_VIEW
+router.get("/:catID", permission("CATEGORY_VIEW"), getCategory);
 
 // @route   DELETE api/restaurants/category/:catID
 // @desc    Delete a category

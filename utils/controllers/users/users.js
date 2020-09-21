@@ -38,7 +38,11 @@ module.exports.updateUserById = async (req, res, next) => {
   if (lastName) user.lastName = lastName;
   if (username) user.username = username;
   if (phone) user.phone = phone;
-  if (email) user.email = email;
+  if (email) {
+    if (email.toLowerCase() === user.email.toLowerCase())
+      this.email = undefined;
+    else user.email = email;
+  }
   if (password) {
     const salt = await bcrypt.genSalt(10).catch();
     const hash = await bcrypt.hash(password, salt).catch();

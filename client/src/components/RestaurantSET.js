@@ -4,6 +4,8 @@ import classnames from "classnames";
 import { isEmpty, isLength, isMobilePhone } from "validator";
 
 import ReactTags from "react-tag-autocomplete";
+import AsyncSelect from "react-select/async";
+import Select from "react-select";
 import "./styles/react-tags.css";
 import {
   Container,
@@ -62,12 +64,70 @@ function SuggestionComponent({ item, query }) {
   );
 }
 @inject("authStore")
-class NewRestaurant extends Component {
-  componentDidMount() {
-    if (!this.props.authStore.authorized("RES_NEW"))
-      this.setState({ redirect: true });
+class RestaurantSET extends Component {
+  async componentDidMount() {
     window.addEventListener("keydown", (e) => {
       if (e.keyCode === 13) e.preventDefault();
+    });
+    this.options("");
+    const { resID } = this.props.match.params;
+    if (!resID) return;
+    this.setState({ resID });
+    const response = await axios({
+      method: "GET",
+      headers: { "Access-Control-Allow-Origin": "*" },
+      url: "http://localhost:5007/api/restaurants/restaurant/" + resID,
+    }).catch((err) => {
+      console.log(err);
+    });
+    if (!response) return;
+    console.log(response.data);
+    const {
+      name,
+      description,
+      phonenumbers,
+      delivery,
+      takeaway,
+      onSite,
+      deliveryWorking,
+      takeawayWorking,
+      onSiteWorking,
+      address,
+      geolocation,
+      admins,
+      categories,
+      group,
+    } = response.data;
+    const { country, state, city, street, building, storeNumber } = address;
+    const [latitude, longitude] = geolocation.coordinates;
+    this.setState({
+      name,
+      description,
+      phonenumbers,
+      delivery: delivery ? true : false,
+      takeaway: takeaway ? true : false,
+      onSite: onSite ? true : false,
+      admins: admins.map((admin) => admin.username),
+      categories: categories.map((cat) => cat.uName),
+      group: group ? group : this.state.group,
+      deliveryWorking: deliveryWorking
+        ? deliveryWorking.days
+        : this.state.deliveryWorking,
+      takeawayWorking: takeawayWorking
+        ? takeawayWorking.days
+        : this.state.takeawayWorking,
+      onSiteWorking: onSiteWorking
+        ? onSiteWorking.days
+        : this.state.onSiteWorking,
+      loclat: latitude,
+      loclon: longitude,
+      country,
+      countryValue: countryList.getName(country),
+      state,
+      city,
+      street,
+      building,
+      storeNumber,
     });
   }
   state = {
@@ -120,7 +180,7 @@ class NewRestaurant extends Component {
     valid: {},
     invalid: {},
 
-    formDisabled: [false, true, true, true],
+    formDisabled: [false, false, false, false],
   };
 
   reactTags = React.createRef();
@@ -380,6 +440,54 @@ class NewRestaurant extends Component {
   onSuggestionsClearRequested = (stateKey) => () => {
     this.setState({
       [stateKey]: [],
+    });
+  };
+
+  promiseOptions = (inputValue) =>
+    new Promise(async (resolve, reject) => {
+      if (!isLength(inputValue, { min: 0, max: 100 })) return [];
+      let response = await axios({
+        method: "GET",
+        headers: { "Access-Control-Allow-Origin": "*" },
+        url:
+          inputValue !== ""
+            ? "http://localhost:5007/api/suggestions/categories"
+            : "http://localhost:5007/api/restaurants/category",
+        params: {
+          value: inputValue,
+        },
+      }).catch((err) => {
+        console.log(err);
+      });
+      if (!response) return reject(new Error("Error"));
+      console.log(response.data);
+      resolve(
+        response.data.map((cat) => ({ value: cat.uName, label: cat.title }))
+      );
+    });
+
+  options = async (inputValue) => {
+    if (!isLength(inputValue, { min: 0, max: 100 })) return;
+    let response = await axios({
+      method: "GET",
+      headers: { "Access-Control-Allow-Origin": "*" },
+      url:
+        inputValue !== ""
+          ? "http://localhost:5007/api/suggestions/categories"
+          : "http://localhost:5007/api/restaurants/category",
+      params: {
+        value: inputValue,
+      },
+    }).catch((err) => {
+      console.log(err);
+    });
+    if (!response) throw new Error("Error");
+    console.log(response.data);
+    this.setState({
+      categorySuggestions: response.data.map((cat) => ({
+        value: cat.uName,
+        label: cat.title,
+      })),
     });
   };
 
@@ -659,6 +767,7 @@ class NewRestaurant extends Component {
                       onChange={(e) =>
                         this.onChange(e.target.name, e.target.value)
                       }
+                      value={this.state.name}
                     />
                     {this.state.invalid.name && (
                       <FormFeedback>{this.state.invalid.name}</FormFeedback>
@@ -679,6 +788,7 @@ class NewRestaurant extends Component {
                       onChange={(e) =>
                         this.onChange(e.target.name, e.target.value)
                       }
+                      value={this.state.description}
                     />
                     {this.state.invalid.description && (
                       <FormFeedback>
@@ -822,7 +932,7 @@ class NewRestaurant extends Component {
                                           {
                                             dayOfWeek: 0,
                                             openHour: 0,
-                                            closeHour: 12,
+                                            closeHour: 24,
                                           },
                                         ],
                                       })
@@ -1391,7 +1501,7 @@ class NewRestaurant extends Component {
                       type="button"
                       onClick={this.getLocation}
                     >
-                      Add Geolocation
+                      Get Geolocation
                     </Button>
                     {this.state.invalid.geolocation && (
                       <UncontrolledAlert color="danger " fade={true}>
@@ -1464,7 +1574,19 @@ class NewRestaurant extends Component {
                 <FormGroup row>
                   <Label xs={12}>Categories</Label>
                   <Col xs={12}>
-                    <ReactTags
+                    <AsyncSelect
+                      backspaceRemovesValue
+                      defaultOptions
+                      loadOptions={this.promiseOptions}
+                      isMulti
+                      cacheOptions
+                    />
+                    <Select
+                      backspaceRemovesValue
+                      options={this.state.categorySuggestions}
+                      isMulti
+                    />
+                    {/*<ReactTags
                       placeholder="Add categories"
                       noSuggestionsText="No categories"
                       ref={this.reactTags}
@@ -1483,7 +1605,7 @@ class NewRestaurant extends Component {
                       inputAttributes={{
                         style: null,
                       }}
-                    />
+                    />*/}
                     {this.state.invalid.categories && (
                       <UncontrolledAlert color="danger" fade={true}>
                         {this.state.invalid.categories}
@@ -1548,4 +1670,4 @@ class NewRestaurant extends Component {
   }
 }
 
-export default NewRestaurant;
+export default RestaurantSET;

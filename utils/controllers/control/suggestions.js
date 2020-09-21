@@ -28,7 +28,7 @@ module.exports.getUsersSuggestions = async (req, res) => {
 
 module.exports.getCategoriesSuggestions = async (req, res) => {
   const { value } = req.query;
-  if (!value || isEmpty(value) || !isLength(value, { min: 2, max: 100 }))
+  if (!value || isEmpty(value) || !isLength(value, { min: 0, max: 100 }))
     return res.status(400).json({
       value: "An input is required with a length of 2 to 100 characters",
     });

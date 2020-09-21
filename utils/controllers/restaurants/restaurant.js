@@ -261,7 +261,11 @@ module.exports.getRestaurant = async (req, res) => {
     return res.status(400).json({ resID: "Restaurant ID is required" });
   if (!ObjectId.isValid(resID))
     return res.status(400).json({ resID: "Invalid restaurant ID" });
-  const restaurant = await Restaurant.findById(resID).catch();
+  const restaurant = await Restaurant.findById(resID)
+    .populate({ path: "admins", select: "username" })
+    .populate({ path: "categories", select: "uName" })
+    .populate({ path: "group", select: "uName" })
+    .catch();
   if (!restaurant)
     return res.status(404).json({ norestaurant: "Cannot find restaurant" });
   res.status(200).json(restaurant);
