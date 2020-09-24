@@ -8,17 +8,17 @@ const {
   getGroupsSuggestions,
 } = require("../../utils/controllers/control/suggestions");
 
-// @route   POST api/suggestions/users
+// @route   GET api/suggestions/users
 // @desc    Return a list of users matching options
 // @access  Public
 router.get("/users", getUsersSuggestions);
 
-// @route   POST api/suggestions/users
+// @route   GET api/suggestions/categories
 // @desc    Return a list of users matching options
 // @access  Public
 router.get("/categories", permission("RES_FIND"), getCategoriesSuggestions);
 
-// @route   POST api/suggestions/users
+// @route   GET api/suggestions/groups
 // @desc    Return a list of users matching options
 // @access  Public
 router.get("/groups", permission("RES_FIND"), getGroupsSuggestions);

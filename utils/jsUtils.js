@@ -1,3 +1,11 @@
+const asyncForEach = async (array, callback) => {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+};
+
+module.exports.asyncForEach = asyncForEach;
+
 module.exports.includesByEquals = async (arr, val) => {
   var flag = false;
   await asyncForEach(arr, async (elem) => {
@@ -13,12 +21,6 @@ module.exports.indexOfEquals = async (arr, val) => {
     if (elem.equals(val)) index = i;
   });
   return index;
-};
-
-module.exports.asyncForEach = async (array, callback) => {
-  for (let index = 0; index < array.length; index++) {
-    await callback(array[index], index, array);
-  }
 };
 
 module.exports.isLatitude = (lat) => {

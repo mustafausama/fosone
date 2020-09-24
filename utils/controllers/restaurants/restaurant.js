@@ -109,7 +109,8 @@ module.exports.saveRestaurant = async (req, res) => {
       storeNumber,
     },
     geolocation: {
-      coordinates: [latitude, longitude],
+      type: "Point",
+      coordinates: [longitude, latitude],
     },
     categories,
     admins,
@@ -182,7 +183,8 @@ module.exports.updateRestaurant = async (req, res) => {
       },
     },
     geolocation: {
-      coordinates: [latitude, longitude],
+      type: "Point",
+      coordinates: [longitude, latitude],
     },
     admins,
   };
@@ -263,8 +265,8 @@ module.exports.getRestaurant = async (req, res) => {
     return res.status(400).json({ resID: "Invalid restaurant ID" });
   const restaurant = await Restaurant.findById(resID)
     .populate({ path: "admins", select: "username" })
-    .populate({ path: "categories", select: "uName" })
-    .populate({ path: "group", select: "uName" })
+    .populate("categories")
+    .populate("group")
     .catch();
   if (!restaurant)
     return res.status(404).json({ norestaurant: "Cannot find restaurant" });

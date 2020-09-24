@@ -3,7 +3,6 @@ import classnames from "classnames";
 
 import { isEmpty, isLength, isMobilePhone } from "validator";
 
-import ReactTags from "react-tag-autocomplete";
 import AsyncSelect from "react-select/async";
 import Select from "react-select";
 import "./styles/react-tags.css";
@@ -26,7 +25,6 @@ import {
   CustomInput,
   UncontrolledAlert,
 } from "reactstrap";
-import Autosuggest from "react-autosuggest";
 import axios from "axios";
 import { Redirect } from "react-router-dom";
 import { inject } from "mobx-react";
@@ -43,33 +41,42 @@ const isLongitude = (lng) => {
   return isFinite(lng) && Math.abs(lng) <= 180;
 };
 
-function TagComponent({ tag, removeButtonText, onDelete }) {
-  return (
-    <Button
-      color="dark"
-      className="mr-2 mb-1"
-      title={removeButtonText}
-      onClick={onDelete}
-    >
-      {tag.name}
-    </Button>
-  );
-}
-
-function SuggestionComponent({ item, query }) {
-  return (
-    <span id={item.id} className={item.name === query ? "match" : "no-match"}>
-      {item.name}
-    </span>
-  );
-}
 @inject("authStore")
 class RestaurantSET extends Component {
   async componentDidMount() {
-    window.addEventListener("keydown", (e) => {
+    /*window.addEventListener("keydown", (e) => {
       if (e.keyCode === 13) e.preventDefault();
+    });*/
+    const responseCat = await axios({
+      method: "GET",
+      headers: { "Access-Control-Allow-Origin": "*" },
+      url: "http://localhost:5007/api/suggestions/categories/",
+    }).catch((err) => {
+      console.log(err);
     });
-    this.options("");
+    const responseGrp = await axios({
+      method: "GET",
+      headers: { "Access-Control-Allow-Origin": "*" },
+      url: "http://localhost:5007/api/suggestions/groups/",
+    }).catch((err) => {
+      console.log(err);
+    });
+    if (responseGrp) {
+      this.setState({
+        categorySuggestions: responseCat.data.map((cat) => ({
+          value: cat.uName,
+          label: cat.title,
+        })),
+      });
+    }
+    if (responseGrp) {
+      this.setState({
+        groupSuggestions: responseGrp.data.map((grp) => ({
+          value: grp.uName,
+          label: grp.title,
+        })),
+      });
+    }
     const { resID } = this.props.match.params;
     if (!resID) return;
     this.setState({ resID });
@@ -99,7 +106,7 @@ class RestaurantSET extends Component {
       group,
     } = response.data;
     const { country, state, city, street, building, storeNumber } = address;
-    const [latitude, longitude] = geolocation.coordinates;
+    const [longitude, latitude] = geolocation.coordinates;
     this.setState({
       name,
       description,
@@ -107,9 +114,17 @@ class RestaurantSET extends Component {
       delivery: delivery ? true : false,
       takeaway: takeaway ? true : false,
       onSite: onSite ? true : false,
-      admins: admins.map((admin) => admin.username),
-      categories: categories.map((cat) => cat.uName),
-      group: group ? group : this.state.group,
+      admins: admins.map((admin) => ({
+        value: admin._id,
+        label: admin.username,
+      })),
+      categories: categories.map((cat) => ({
+        value: cat.uName,
+        label: cat.title,
+      })),
+      group: group
+        ? { value: group.uName, label: group.title }
+        : this.state.group,
       deliveryWorking: deliveryWorking
         ? deliveryWorking.days
         : this.state.deliveryWorking,
@@ -150,7 +165,6 @@ class RestaurantSET extends Component {
     building: "",
     street: "",
     country: "",
-    countryValue: "",
     state: "",
     city: "",
     storeNumber: "",
@@ -172,8 +186,6 @@ class RestaurantSET extends Component {
 
     countries: countryList.getData(),
 
-    countrySuggestions: [],
-    adminSuggestions: [],
     categorySuggestions: [],
     groupSuggestions: [],
 
@@ -182,8 +194,6 @@ class RestaurantSET extends Component {
 
     formDisabled: [false, false, false, false],
   };
-
-  reactTags = React.createRef();
 
   validate = {
     name: () => {
@@ -353,7 +363,7 @@ class RestaurantSET extends Component {
       else this.setValid("geolocation");
     },
     categories: () => {
-      const { categories } = this.state;
+      var categories = this.state.categories.map((cat) => cat.value);
       if (categories.length === 0)
         this.setInvalid(
           "categories",
@@ -362,8 +372,8 @@ class RestaurantSET extends Component {
       else this.setValid("categories");
     },
     group: () => {
-      const { group } = this.state;
-      if (isEmpty(group) || !isLength(group, { min: 3, max: 50 }))
+      const group = this.state.group.value;
+      if (!group || isEmpty(group) || !isLength(group, { min: 3, max: 50 }))
         this.setInvalid(
           "group",
           "Invalid group. Group should be selected correctly"
@@ -386,150 +396,28 @@ class RestaurantSET extends Component {
     });
   };
 
-  getSuggestions = (from) => async (value) => {
-    const inputValue = value.trim().toLowerCase();
-    const inputLength = inputValue.length;
-    if (inputLength === 0) return [];
-    if (Array.isArray(from)) {
-      return from.filter(
-        (country) =>
-          country.name.toLowerCase().slice(0, inputLength) === inputValue
-      );
-    }
-    if (inputLength < 2 || inputLength > 100) return [];
-    let response = await axios({
-      method: "GET",
-      headers: { "Access-Control-Allow-Origin": "*" },
-      url: from,
-      params: {
-        value: inputValue,
-      },
-    }).catch((err) => {
-      console.log(err);
-    });
-    if (!response) return null;
-    console.log(response.data);
-    return response.data;
+  toggleTab = (tab) => {
+    if (this.activeTab !== tab) this.setState({ activeTab: tab });
   };
 
-  getSuggestionValue = (stateKey, apply) => (suggestion) => {
-    console.log(suggestion);
-    this.setState({ [stateKey]: apply.apply(this, [suggestion.name]) });
-    return suggestion.name;
-  };
-
-  countryOnChange = (event, { newValue }) => {
-    this.setState({
-      countryValue: newValue,
-    });
-  };
-
-  groupOnChange = (event, { newValue }) => {
-    this.setState({
-      group: newValue,
-    });
-  };
-
-  onSuggestionsFetchRequested = (from, stateKey) => async ({ value }) => {
-    console.log(stateKey, this.state[stateKey], value);
-    this.setState({
-      [stateKey]: await this.getSuggestions(from)(value),
-    });
-  };
-
-  onSuggestionsClearRequested = (stateKey) => () => {
-    this.setState({
-      [stateKey]: [],
-    });
-  };
-
-  promiseOptions = (inputValue) =>
+  loadAdminsOptions = (value) =>
     new Promise(async (resolve, reject) => {
-      if (!isLength(inputValue, { min: 0, max: 100 })) return [];
+      if (!isLength(value, { min: 2, max: 100 })) return resolve([]);
       let response = await axios({
         method: "GET",
         headers: { "Access-Control-Allow-Origin": "*" },
-        url:
-          inputValue !== ""
-            ? "http://localhost:5007/api/suggestions/categories"
-            : "http://localhost:5007/api/restaurants/category",
+        url: "http://localhost:5007/api/suggestions/users",
         params: {
-          value: inputValue,
+          value,
         },
       }).catch((err) => {
         console.log(err);
       });
-      if (!response) return reject(new Error("Error"));
-      console.log(response.data);
+      if (!response) return resolve([]);
       resolve(
-        response.data.map((cat) => ({ value: cat.uName, label: cat.title }))
+        response.data.map((user) => ({ value: user._id, label: user.username }))
       );
     });
-
-  options = async (inputValue) => {
-    if (!isLength(inputValue, { min: 0, max: 100 })) return;
-    let response = await axios({
-      method: "GET",
-      headers: { "Access-Control-Allow-Origin": "*" },
-      url:
-        inputValue !== ""
-          ? "http://localhost:5007/api/suggestions/categories"
-          : "http://localhost:5007/api/restaurants/category",
-      params: {
-        value: inputValue,
-      },
-    }).catch((err) => {
-      console.log(err);
-    });
-    if (!response) throw new Error("Error");
-    console.log(response.data);
-    this.setState({
-      categorySuggestions: response.data.map((cat) => ({
-        value: cat.uName,
-        label: cat.title,
-      })),
-    });
-  };
-
-  onDelete = (stateKey) => (i) => {
-    const tags = this.state[stateKey].slice(0);
-    tags.splice(parseInt(i), 1);
-    this.setState({ [stateKey]: tags });
-  };
-
-  onAddition = (stateKey) => async (tag) => {
-    const tags = this.state[stateKey];
-    var flag = true;
-    await tags.forEach((tg) => {
-      if (tg.id === tag.id) flag = false;
-    });
-    if (flag) this.setState({ [stateKey]: tags.concat(tag) });
-  };
-
-  onInput = (stateKey, filter, from) => async (query) => {
-    if (query.length < 2 || query.length > 100) return;
-    let response = await axios({
-      method: "GET",
-      url: from,
-      headers: { "Access-Control-Allow-Origin": "*" },
-      params: {
-        value: query,
-      },
-    }).catch((err) => {
-      console.log(err);
-    });
-    if (!response) return;
-    console.log(response);
-    const array = await response.data.filter(
-      (element) =>
-        this.state[filter].filter((elem) => elem.id === element.id).length === 0
-    );
-    this.setState({ [stateKey]: array });
-  };
-
-  toggleTab = (tab) => {
-    if (this.activeTab !== tab) this.setState({ activeTab: tab });
-  };
 
   onChange = async (key, value) => {
     await this.setState({
@@ -627,6 +515,7 @@ class RestaurantSET extends Component {
     await this.validate.categories();
     await this.validate.group();
     if (!this.state.valid.categories || !this.state.valid.group) return;
+    const { resID } = this.props.match.params;
     const {
       name,
       description,
@@ -643,8 +532,8 @@ class RestaurantSET extends Component {
       building,
       street,
       storeNumber,
-      loclat: latitude,
-      loclon: longitude,
+      loclat,
+      loclon,
       admins,
       categories,
       group,
@@ -659,17 +548,13 @@ class RestaurantSET extends Component {
       building,
       street,
       storeNumber,
-      latitude,
-      longitude,
-      admins,
-      categories,
-      group,
+      latitude: loclat.toString(),
+      longitude: loclon.toString(),
+      admins: admins.map((admin) => admin.value),
+      categories: categories.map((cat) => cat.value),
+      group: group.value,
     };
 
-    data.admins = data.admins.map((cat) => cat.id);
-    data.categories = data.categories.map((cat) => cat.id);
-    data.latitude = data.latitude.toString();
-    data.longitude = data.longitude.toString();
     if (delivery) {
       data.delivery = "YES";
       data.delivery_working = deliveryWorking;
@@ -684,27 +569,56 @@ class RestaurantSET extends Component {
     }
 
     const response = await axios({
-      method: "POST",
+      method: resID ? "PUT" : "POST",
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
       },
-      url: "http://localhost:5007/api/restaurants/restaurant",
+      url:
+        "http://localhost:5007/api/restaurants/restaurant" +
+        (resID ? `/${resID}` : ""),
       data: data,
     }).catch((err) => {
       console.log(err);
     });
-
-    if (response) this.setState({ redirect: true });
+    if (!response) return;
+    if (resID)
+      this.setState({
+        message: "Reataurant updated successfully",
+      });
+    else
+      this.setState({
+        redirect: true,
+        redirectMessage: "Restaurant created successfully",
+        resID: response.data._id,
+      });
   };
 
-  renderCountrySuggestion = (suggestion) => <div>{suggestion.name}</div>;
-  renderGroupSuggestion = (suggestion) => <div>{suggestion.name}</div>;
   render() {
-    if (this.state.redirect) return <Redirect to="/" />;
+    if (this.state.redirect)
+      return (
+        <Redirect
+          to={{
+            pathname: this.props.location.pathname + "/" + this.state.resID,
+            state: { message: this.state.redirectMessage },
+          }}
+        />
+      );
+    const { resID } = this.props.match.params;
     return (
       <>
         <Container>
+          {this.state.message && (
+            <UncontrolledAlert color="success">
+              {this.state.message}
+            </UncontrolledAlert>
+          )}
+          {this.props.location.state && this.props.location.state.message && (
+            <UncontrolledAlert color="success">
+              {this.props.location.state.message}
+            </UncontrolledAlert>
+          )}
+
           <Nav tabs className="mt-3">
             <NavItem>
               <NavLink
@@ -996,6 +910,7 @@ class RestaurantSET extends Component {
                                   type="number"
                                   max="24"
                                   min="0"
+                                  value={resID ? working.openHour : null}
                                   placeholder="Open time (24 format). Default: 0"
                                   onChange={(e) => {
                                     this.setState({
@@ -1013,6 +928,7 @@ class RestaurantSET extends Component {
                                   type="number"
                                   max="24"
                                   min="0"
+                                  value={resID ? working.closeHour : null}
                                   placeholder="Closing hour (24 format). Default: 24"
                                   onChange={(e) => {
                                     this.setState({
@@ -1143,6 +1059,7 @@ class RestaurantSET extends Component {
                                   type="number"
                                   max="24"
                                   min="0"
+                                  value={resID ? working.openHour : null}
                                   placeholder="Open time (24 format). Default: 0"
                                   onChange={(e) => {
                                     this.setState({
@@ -1160,6 +1077,7 @@ class RestaurantSET extends Component {
                                   type="number"
                                   max="24"
                                   min="0"
+                                  value={resID ? working.closeHour : null}
                                   placeholder="Closing hour (24 format). Default: 24"
                                   onChange={(e) => {
                                     this.setState({
@@ -1291,6 +1209,7 @@ class RestaurantSET extends Component {
                                   type="number"
                                   max="24"
                                   min="0"
+                                  value={resID ? working.openHour : null}
                                   placeholder="Open time (24 format). Default: 0"
                                   onChange={(e) => {
                                     this.setState({
@@ -1308,6 +1227,7 @@ class RestaurantSET extends Component {
                                   type="number"
                                   max="24"
                                   min="0"
+                                  value={resID ? working.closeHour : null}
                                   placeholder="Closing hour (24 format). Default: 24"
                                   onChange={(e) => {
                                     this.setState({
@@ -1415,34 +1335,20 @@ class RestaurantSET extends Component {
                   <Col md={4}>
                     <FormGroup>
                       <Label for="country">Country</Label>
-                      <Autosuggest
-                        theme={{
-                          container: "input-group mb-3",
-                          input: "form-control",
-                          suggestionsContainer: "container dropdown",
-                          suggestionsList: "dropdown-menu show",
-                          suggestion: "dropdown-item btn",
-                          suggestionHighlighted: "active",
-                        }}
-                        suggestions={this.state.countrySuggestions}
-                        onSuggestionsFetchRequested={this.onSuggestionsFetchRequested(
-                          countries,
-                          "countrySuggestions"
-                        )}
-                        onSuggestionsClearRequested={this.onSuggestionsClearRequested(
-                          "countrySuggestions"
-                        )}
-                        getSuggestionValue={this.getSuggestionValue(
-                          "country",
-                          countryList.getCode
-                        )}
-                        renderSuggestion={this.renderCountrySuggestion}
-                        inputProps={{
-                          placeholder: "Type in your country name",
-                          value: this.state.countryValue,
-                          onChange: this.countryOnChange,
-                        }}
-                        id="country"
+                      <Select
+                        options={countries.map((c) => ({
+                          value: c.code,
+                          label: c.name,
+                        }))}
+                        onChange={(e) => this.onChange("country", e.value)}
+                        value={
+                          !this.state.country
+                            ? null
+                            : {
+                                value: this.state.country,
+                                label: countryList.getName(this.state.country),
+                              }
+                        }
                       />
                       {this.state.invalid.country && (
                         <UncontrolledAlert color="danger " fade={true}>
@@ -1549,63 +1455,23 @@ class RestaurantSET extends Component {
                     Admins <small>(optional)</small>
                   </Label>
                   <Col xs={12}>
-                    <ReactTags
-                      placeholder="Add admins"
-                      noSuggestionsText="No users"
-                      ref={this.reactTags}
-                      tags={this.state.admins}
-                      suggestions={this.state.adminSuggestions}
-                      onDelete={this.onDelete("admins")}
-                      onAddition={this.onAddition("admins")}
-                      onInput={this.onInput(
-                        "adminSuggestions",
-                        "admins",
-                        "http://localhost:5007/api/suggestions/users"
-                      )}
-                      maxSuggestionsLength={20}
-                      tagComponent={TagComponent}
-                      SuggestionComponent={SuggestionComponent}
-                      inputAttributes={{
-                        style: null,
-                      }}
+                    <AsyncSelect
+                      isMulti
+                      loadOptions={this.loadAdminsOptions}
+                      onChange={(e) => this.setState({ admins: e })}
+                      value={this.state.admins}
                     />
                   </Col>
                 </FormGroup>
                 <FormGroup row>
                   <Label xs={12}>Categories</Label>
                   <Col xs={12}>
-                    <AsyncSelect
-                      backspaceRemovesValue
-                      defaultOptions
-                      loadOptions={this.promiseOptions}
-                      isMulti
-                      cacheOptions
-                    />
                     <Select
-                      backspaceRemovesValue
-                      options={this.state.categorySuggestions}
                       isMulti
+                      options={this.state.categorySuggestions}
+                      onChange={(e) => this.setState({ categories: e })}
+                      value={this.state.categories}
                     />
-                    {/*<ReactTags
-                      placeholder="Add categories"
-                      noSuggestionsText="No categories"
-                      ref={this.reactTags}
-                      tags={this.state.categories}
-                      suggestions={this.state.categorySuggestions}
-                      onDelete={this.onDelete("categories")}
-                      onAddition={this.onAddition("categories")}
-                      onInput={this.onInput(
-                        "categorySuggestions",
-                        "categories",
-                        "http://localhost:5007/api/suggestions/categories"
-                      )}
-                      maxSuggestionsLength={20}
-                      tagComponent={TagComponent}
-                      SuggestionComponent={SuggestionComponent}
-                      inputAttributes={{
-                        style: null,
-                      }}
-                    />*/}
                     {this.state.invalid.categories && (
                       <UncontrolledAlert color="danger" fade={true}>
                         {this.state.invalid.categories}
@@ -1616,33 +1482,10 @@ class RestaurantSET extends Component {
                 <FormGroup row>
                   <Label xs={12}>Group</Label>
                   <Col xs={12} md={6}>
-                    <Autosuggest
-                      theme={{
-                        container: "input-group mb-3",
-                        input: "form-control",
-                        suggestionsContainer: "container dropdown",
-                        suggestionsList: "dropdown-menu show",
-                        suggestion: "dropdown-item btn",
-                        suggestionHighlighted: "active",
-                      }}
-                      suggestions={this.state.groupSuggestions}
-                      onSuggestionsFetchRequested={this.onSuggestionsFetchRequested(
-                        "http://localhost:5007/api/suggestions/groups",
-                        "groupSuggestions"
-                      )}
-                      onSuggestionsClearRequested={this.onSuggestionsClearRequested(
-                        "groupSuggestions"
-                      )}
-                      getSuggestionValue={this.getSuggestionValue(
-                        "group",
-                        (group) => group
-                      )}
-                      renderSuggestion={this.renderCountrySuggestion}
-                      inputProps={{
-                        placeholder: "Type in your group unique name",
-                        value: this.state.group,
-                        onChange: this.groupOnChange,
-                      }}
+                    <Select
+                      options={this.state.groupSuggestions}
+                      onChange={(e) => this.setState({ group: e })}
+                      value={this.state.group}
                     />
                     {this.state.invalid.group && (
                       <UncontrolledAlert color="danger" fade={true}>
