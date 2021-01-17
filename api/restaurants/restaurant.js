@@ -1,6 +1,7 @@
 const express = require("express");
-const { permission } = require("../../utils/controllers/authentication/auth");
 const router = express.Router();
+
+const { permission } = require("../../utils/controllers/authentication/auth");
 const {
   configureRestaurant,
   saveRestaurant,

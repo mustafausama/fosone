@@ -7,101 +7,107 @@ const Menu = require("./Menu").schema;
 const RestaurantSchema = new Schema({
   name: {
     type: String,
-    required: true,
+    required: true
   },
   description: String,
   phonenumbers: {
     type: [String],
-    required: true,
+    required: true
   },
   delivery: {
     type: Boolean,
-    default: false,
+    default: false
   },
   takeaway: {
     type: Boolean,
-    default: false,
+    default: false
   },
   onSite: {
     type: Boolean,
-    default: false,
+    default: false
   },
   deliveryWorking: {
     type: Working,
     required: () => {
       return this.delivery ? true : false;
-    },
+    }
   },
   takeawayWorking: {
     type: Working,
     required: () => {
       return this.takeaway ? true : false;
-    },
+    }
   },
   onSiteWorking: {
     type: Working,
     required: () => {
       return this.onSite ? true : false;
-    },
+    }
   },
+  picture: String,
   address: {
     type: {
       country: {
         type: String,
-        required: true,
+        required: true
       },
       state: String,
       city: {
         type: String,
-        required: true,
+        required: true
       },
       street: {
         type: String,
-        required: true,
+        required: true
       },
       building: {
         type: String,
-        required: true,
+        required: true
       },
-      storeNumber: String,
+      storeNumber: String
     },
-    required: true,
+    required: true
   },
   geolocation: {
     type: {
       type: String,
-      default: "Point",
+      default: "Point"
     },
     coordinates: {
       type: [Number],
       required: true,
       validate: function (val) {
         return val.length === 2;
-      },
-    },
+      }
+    }
   },
   rating: {
     type: Number,
     min: 0,
-    max: 5,
+    max: 5
   },
   admins: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
-    },
+      ref: "User"
+    }
   ],
   categories: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Category",
-    },
+      ref: "Category"
+    }
   ],
   group: {
     type: Schema.Types.ObjectId,
-    ref: "Group",
+    ref: "Group"
   },
-  menus: [Menu],
+  menus: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Menu"
+    }
+  ]
 });
 
 RestaurantSchema.index({ geolocation: "2dsphere" });

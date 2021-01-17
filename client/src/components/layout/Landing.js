@@ -1,7 +1,7 @@
 import { inject, observer } from "mobx-react";
 import React, { Component } from "react";
-import Dashboard from "./Dashboard";
-import Welcome from "./Welcome";
+import Dashboard from "../Dashboard";
+import Welcome from "../Welcome";
 
 @inject("authStore")
 @observer

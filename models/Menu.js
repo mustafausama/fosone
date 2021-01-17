@@ -4,23 +4,29 @@ const Schema = mongoose.Schema;
 const MenuItem = require("./MenuItem").schema;
 
 const MenuSchema = new Schema({
-  name: String,
-  content: {
+  name: { type: String, required: true },
+  categories: {
     type: [
       {
         categoryName: {
           type: String,
-          required: true,
+          required: true
         },
         categoryDescription: String,
-        items: {
-          type: [MenuItem],
-          required: true,
-        },
-      },
+        items: [
+          {
+            type: Schema.Types.ObjectId,
+            ref: "MenuItem"
+          }
+        ]
+      }
     ],
-    required: true,
+    required: true
   },
+  date: {
+    type: Date,
+    default: Date.now()
+  }
 });
 
 module.exports = Menu = mongoose.model("Menu", MenuSchema);

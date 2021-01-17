@@ -5,7 +5,6 @@ import { isEmpty, isLength, isMobilePhone } from "validator";
 
 import AsyncSelect from "react-select/async";
 import Select from "react-select";
-import "./styles/react-tags.css";
 import {
   Container,
   Row,
@@ -995,7 +994,7 @@ class RestaurantSET extends Component {
                                           {
                                             dayOfWeek: 0,
                                             openHour: 0,
-                                            closeHour: 12,
+                                            closeHour: 24,
                                           },
                                         ],
                                       })
@@ -1144,7 +1143,7 @@ class RestaurantSET extends Component {
                                           {
                                             dayOfWeek: 0,
                                             openHour: 0,
-                                            closeHour: 12,
+                                            closeHour: 24,
                                           },
                                         ],
                                       })

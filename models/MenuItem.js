@@ -4,7 +4,9 @@ const Schema = mongoose.Schema;
 const MenuItemSchema = new Schema({
   name: {
     type: String,
-    required: true,
+    required: () => {
+      return this.description ? false : true;
+    },
   },
   description: String,
   picture: String,
@@ -13,10 +15,6 @@ const MenuItemSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
-});
-
-MenuItemSchema.add({
-  options: [MenuItemSchema],
 });
 
 module.exports = MenuItem = mongoose.model("MenuItem", MenuItemSchema);

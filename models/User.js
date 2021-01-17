@@ -6,70 +6,89 @@ const Working = require("./Working").schema;
 const UserSchema = new Schema({
   name: {
     type: String,
-    required: true,
+    required: true
   },
   username: {
     type: String,
-    required: true,
+    required: true
   },
   phone: String,
   email: String,
   password: String, // required if facebook is not provided
   birthdate: {
     type: Date,
-    required: true,
+    required: true
   },
-  picture: {
-    type: String,
-  },
+  picture: String,
   facebook: {
     id: {
       type: Number,
       required: () => {
         return this.facebook;
-      },
-    },
+      }
+    }
   },
-  timeZone: {
-    type: String,
-  },
+  timeZone: String,
   country: {
     type: String,
-    required: true,
-  },
-  location: {
-    type: Schema.Types.ObjectId,
-    ref: "Location",
+    required: true
   },
   addressList: [
     {
-      state: String,
-      city: String,
-      street: String,
-      building: String,
-      floor: String,
-      apartment: String,
-      availability: Working,
-      phone: String,
-      location: {
-        type: Schema.Types.ObjectId,
-        ref: "Location",
+      country: {
+        type: String,
+        required: true
       },
-    },
+      state: String,
+      city: {
+        type: String,
+        required: true
+      },
+      street: {
+        type: String,
+        required: true
+      },
+      building: {
+        type: String,
+        required: true
+      },
+      floor: String,
+      apartment: {
+        type: String,
+        required: true
+      },
+      phone: {
+        type: String,
+        required: true
+      },
+      geolocation: {
+        type: {
+          type: String,
+          default: "Point"
+        },
+        coordinates: {
+          type: [Number],
+          required: true,
+          validate: function (val) {
+            return val.length === 2;
+          }
+        }
+      }
+    }
   ],
   role: {
     type: Schema.Types.ObjectId,
     ref: "Role",
-    required: true,
+    required: true
   },
   date: {
     type: Date,
-    default: Date.now(),
+    default: Date.now()
   },
   activated: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 });
 
 module.exports = User = mongoose.model("User", UserSchema);

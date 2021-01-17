@@ -5,24 +5,24 @@ const UserTokenSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+    ref: "User"
   },
   token: {
     type: String,
-    required: true,
+    required: true
   },
   for: {
     type: String,
-    required: true,
+    required: true
   },
-  created: {
+  date: {
     type: Date,
-    default: Date.now(),
+    default: Date.now()
   },
   expiry: {
     type: Date,
-    default: new Date(+new Date() + 60 * 60 * 1000),
-  },
+    default: new Date(+new Date() + 60 * 60 * 1000)
+  }
 });
 
 module.exports = UserToken = mongoose.model("UserToken", UserTokenSchema);

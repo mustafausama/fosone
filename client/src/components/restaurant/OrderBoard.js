@@ -25,7 +25,7 @@ import {
   Dropdown,
   DropdownToggle,
   DropdownMenu,
-  DropdownItem,
+  DropdownItem
 } from "reactstrap";
 
 class Store {
@@ -86,8 +86,8 @@ class Store {
       url: "http://localhost:5007/api/suggestions/categories",
       headers: { "Access-Control-Allow-Origin": "*" },
       params: {
-        value,
-      },
+        value
+      }
     }).catch((err) => {
       console.log(err);
     });
@@ -95,7 +95,7 @@ class Store {
     this.catSuggestions = response.data.map((cat) => ({
       id: cat.id,
       title: cat.title,
-      checked: false,
+      checked: false
     }));
   };
   @action toggleCat = (index) => {
@@ -104,7 +104,7 @@ class Store {
     var newCat = {
       title: oldCat.title,
       id: oldCat.id,
-      checked: !oldCat.checked,
+      checked: !oldCat.checked
     };
     arr[index] = newCat;
     if (newCat.checked) this.cats.push(newCat.id);
@@ -119,8 +119,8 @@ class Store {
       url: "http://localhost:5007/api/suggestions/groups",
       headers: { "Access-Control-Allow-Origin": "*" },
       params: {
-        value,
-      },
+        value
+      }
     }).catch((err) => {
       console.log(err);
     });
@@ -128,7 +128,7 @@ class Store {
     this.grpSuggestions = response.data.map((grp) => ({
       id: grp.id,
       title: grp.title,
-      checked: false,
+      checked: false
     }));
   };
   @action toggleGrp = (index) => {
@@ -137,7 +137,7 @@ class Store {
     var newGrp = {
       title: oldGrp.title,
       id: oldGrp.id,
-      checked: !oldGrp.checked,
+      checked: !oldGrp.checked
     };
     arr[index] = newGrp;
     if (newGrp.checked) this.grps.push(newGrp.id);
@@ -161,11 +161,12 @@ class Store {
       method: "GET",
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       url: "http://localhost:5007/api/restaurants/restaurant",
-      params: data,
+      params: data
     }).catch((err) => {
+      console.log("caught:", err);
       console.log(err.response);
       if (err.response.status === 404) this.restaurants = null;
       else alert(err.response.data);
@@ -186,7 +187,7 @@ class OrderBoard extends Component {
   state = {
     dropdownOpen1: false,
     dropdownOpen2: false,
-    dropdownOpen3: false,
+    dropdownOpen3: false
   };
   toggleDropToggle1 = () => {
     this.setState({ dropdownOpen1: !this.state.dropdownOpen1 });
